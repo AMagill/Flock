@@ -1,0 +1,4 @@
+name: node_graph
+description: A pub package
+dependencies:
+  vector_math: any
