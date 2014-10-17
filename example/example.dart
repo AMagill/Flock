@@ -8,6 +8,8 @@ int _width, _height;
 webgl.RenderingContext _gl;
 RoundedRect _node;
 Bezier _bezier;
+DistanceField _sdf;
+TextLayout _text;
 
 void main() {
   var canvas = document.querySelector("#glCanvas");
@@ -17,8 +19,16 @@ void main() {
 
   _node = new RoundedRect(_gl, new Vector2(1.8, 0.2), new Vector2(0.0, 0.5));
   _bezier = new Bezier(_gl, new Vector2List.fromList([
-    new Vector2(0.0, 0.0), new Vector2(0.0, -0.5),
-    new Vector2(0.5, 0.0), new Vector2(0.5, -0.5)]));
+    new Vector2(0.0, -0.1), new Vector2(0.0, -0.5),
+    new Vector2(0.5, -0.5), new Vector2(0.5, 0.0)]));
+  _sdf = new DistanceField(_gl);
+  _text = new TextLayout(_gl, _sdf, "Hello!");
+  //_sdf.loadUrl('/packages/node_graph/fonts/OpenSans-SDF.png',
+  //             '/packages/node_graph/fonts/OpenSans-SDF.json')
+  _sdf.loadUrl('/packages/node_graph/fonts/font.png',
+               '/packages/node_graph/fonts/font.json')
+    .then((_) => render());
+  
   
   _gl.enable(webgl.BLEND);
   _gl.blendFunc(webgl.SRC_ALPHA, webgl.ONE_MINUS_SRC_ALPHA);
@@ -40,5 +50,6 @@ void render() {
   
   _node.draw();
   _bezier.draw();
+  _text.draw();
 }
 
