@@ -1,0 +1,22 @@
+{
+	"circle_open":	{
+		"x":0.0078125,
+		"y":0.0078125,
+		"width":0.1640625,
+		"height":0.1640625,
+		"xoffset":-0.08203125,
+		"yoffset":-0.08203125,
+		"xadvance":0.1640625,
+		"kernings":{}
+	},
+	"circle_filled":	{
+		"x":0.1796875,
+		"y":0.0078125,
+		"width":0.15625,
+		"height": 0.15625,
+		"xoffset":-0.078125,
+		"yoffset":-0.078125,
+		"xadvance":0.15625,
+		"kernings":{}
+	}
+}

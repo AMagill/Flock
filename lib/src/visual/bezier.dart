@@ -8,6 +8,7 @@ class Bezier {
   Vector2List _points;
   int _divisions, _nLines;
   double _thick;
+  Matrix4 _modelProj = new Matrix4.identity();
   
   get points => _points;
   set points(Vector2List newPts) {
@@ -38,9 +39,10 @@ precision mediump int;
 precision mediump float;
 
 attribute vec2  aPosition;
+uniform   mat4  uProj;
 
 void main() {
-  gl_Position = vec4(aPosition, 0.0, 1.0);
+  gl_Position = uProj * vec4(aPosition, 0.0, 1.0);
 }
 """;
       
@@ -61,7 +63,7 @@ void main() {
     _generateBuffer();
   }
   
-  void draw() {
+  void draw(Matrix4 projection) {
     _shader.use();
 
     _gl.lineWidth(4.0);
@@ -69,6 +71,9 @@ void main() {
     _gl.bindBuffer(webgl.ARRAY_BUFFER, _vboLine);
     _gl.vertexAttribPointer(0, 2, webgl.FLOAT, false, 0, 0);
     _gl.enableVertexAttribArray(0);
+    
+    var mvp = projection * _modelProj;
+    _gl.uniformMatrix4fv(_shader['uProj'], false, mvp.storage);
     
     _gl.drawArrays(webgl.TRIANGLES, 0, _nLines * 6);
   }

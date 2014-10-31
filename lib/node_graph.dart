@@ -7,10 +7,11 @@ import 'dart:typed_data';
 import 'dart:convert'; 
 import 'dart:html';
 import 'dart:async';
-import 'src/shader.dart';
-import 'src/texture.dart';
+import 'src/util/shader.dart';
 
 part 'src/visual/rounded_rect.dart';
 part 'src/visual/bezier.dart';
 part 'src/visual/distance_field.dart';
 part 'src/visual/text_layout.dart';
+part 'src/visual/node.dart';
+part 'src/visual/graph.dart';

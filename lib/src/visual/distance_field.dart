@@ -18,37 +18,50 @@ class DistanceField {
 precision mediump int;
 precision mediump float;
 
-attribute vec2 aPos, aTex;
+attribute vec2  aPos, aTex;
+attribute vec3  aColor;
+attribute float aThreshold;
 
-uniform float uSize;
+uniform mat4 uProj;
 
-varying vec2 vTex;
+varying vec2  vTex;
+varying vec4  vPos;
+varying vec3  vColor;
+varying float vThreshold;
 
 void main() {
-  gl_Position = vec4(aPos * uSize, 0.0, 1.0);
+  vPos = vec4(aPos, 0.0, 1.0);
+  gl_Position = uProj * vPos;
   vTex = aTex;
+  vColor = aColor;
+  vThreshold = aThreshold;
 }
 """;
       
       var fragSource =
 """
+#extension GL_OES_standard_derivatives : enable
+
 precision mediump int;
 precision mediump float;
 
-uniform float uSize;
 uniform sampler2D uTexture;
 
-varying vec2 vTex;
+varying vec2  vTex;
+varying vec4  vPos;
+varying vec3  vColor;
+varying float vThreshold;
 
 void main() {
-  const float th = 0.5;
-  float aa = 0.01 / uSize;
-  float alpha = smoothstep(th-aa, th+aa, texture2D(uTexture, vTex).r);
-  gl_FragColor = vec4(0.0, 0.0, 0.0, alpha); 
+  float aa = 64.0 * fwidth(vPos.x);
+  float alpha = smoothstep(vThreshold-aa, vThreshold+aa, texture2D(uTexture, vTex).r);
+  alpha = step(vThreshold, texture2D(uTexture, vTex).r);
+  gl_FragColor = vec4(vColor, alpha);
 }
 """;
       
-      _shader = new Shader(_gl, vertSource, fragSource, {'aPos': 0, 'aTex': 1});
+      _shader = new Shader(_gl, vertSource, fragSource, 
+          {'aPos': 0, 'aTex': 1, 'aColor': 2, 'aThreshold': 3});
     }
     
     _texture = _gl.createTexture();

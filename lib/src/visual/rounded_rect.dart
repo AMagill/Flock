@@ -6,17 +6,23 @@ class RoundedRect {
   static Shader _shader;
   
   webgl.RenderingContext _gl;
-  Vector2 _size, _position;
-  double _radius = 0.1;
+  Vector2 size, position;
+  double radius, edgeThick;
+  Vector4 inColor, edgeColor;
+  Matrix4 _modelProj = new Matrix4.identity();
   
-  RoundedRect(this._gl, [this._size, this._position]) {
-    // Set default parameter values
-    if (_size == null) {
-      _size     = new Vector2(1.0, 1.0);
-    }
-    if (_position == null) {
-      _position = new Vector2(0.0, 0.0);
-    }
+  RoundedRect(this._gl, {this.size, this.position, this.radius:0.05, 
+    this.edgeThick:1.0, this.inColor, this.edgeColor}) {
+    if (size == null)
+      size = new Vector2(1.0, 1.0);
+    if (position == null)
+      position = new Vector2(0.0, 0.0);
+    if (inColor == null)
+      inColor   = new Vector4(0.5, 0.5, 0.5, 1.0);
+    if (edgeColor == null)
+      edgeColor = new Vector4(0.0, 0.0, 0.0, 1.0);
+    if (position != null)
+      _modelProj.translate(position.x, position.y);
 
     // Initialize the static variables, if they haven't already
     if (_vboQuad == null) {
@@ -28,39 +34,6 @@ class RoundedRect {
       _gl.bufferDataTyped(webgl.ARRAY_BUFFER, verts, webgl.STATIC_DRAW);
     }
     
-    if (_texture == null) {
-      const size = 64;
-      var pixels = new Uint8List(4 * size);
-      var i = 0;
-      while (i < 4*60) {
-        pixels[i++] = 0x80;
-        pixels[i++] = 0x80;
-        pixels[i++] = 0x80;
-        pixels[i++] = 0xFF;
-      }
-      while (i < 4*63) {
-        pixels[i++] = 0x00;
-        pixels[i++] = 0x00;
-        pixels[i++] = 0x00;        
-        pixels[i++] = 0xFF;
-      }
-      while (i < 4*64) {
-        pixels[i++] = 0x00;
-        pixels[i++] = 0x00;
-        pixels[i++] = 0x00;        
-        pixels[i++] = 0x00;
-      }
-      
-      _texture = _gl.createTexture();
-      _gl.bindTexture(webgl.TEXTURE_2D, _texture);
-      _gl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_MIN_FILTER, webgl.LINEAR);
-      _gl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_MAG_FILTER, webgl.LINEAR);
-      _gl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_WRAP_S, webgl.CLAMP_TO_EDGE);
-      _gl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_WRAP_T, webgl.CLAMP_TO_EDGE);
-      _gl.texImage2DTyped(webgl.TEXTURE_2D, 0, webgl.RGBA, 1, size, 0, webgl.RGBA, 
-          webgl.UNSIGNED_BYTE, pixels);
-    }
-    
     if (_shader == null) {
       var vertSource = 
 """
@@ -69,31 +42,46 @@ precision mediump float;
 
 attribute vec2  aPosition;
 varying vec2    vPosition;
-uniform vec2    uSize, uPosition;
+uniform vec2    uSize;
+uniform mat4    uProj;
 
 void main() {
-  gl_Position = vec4(aPosition * uSize * 0.5 + uPosition, 0.0, 1.0);
+  gl_Position = uProj * vec4(aPosition * uSize * 0.5, 0.0, 1.0);
   vPosition   = aPosition;
 }
 """;
       
       var fragSource =
 """
+#extension GL_OES_standard_derivatives : enable
+
 precision mediump int;
 precision mediump float;
 
 varying vec2      vPosition;
 uniform vec2      uSize, uPosition;
 uniform float     uRadius;
-uniform sampler2D uTexture;
+uniform float     uEdgeThick; 
+uniform vec4      uColorIn, uColorEdge;
 
 void main() {
-  vec2 rad = uRadius / uSize * 2.0;
+  const float EPSILON = 0.000001;
+
+  vec2 cornerRad = uRadius / uSize * 2.0;
   vec2 cornerPos  = sign(vPosition) *  
-    max(((abs(vPosition) - (1.0 - rad)) / rad), vec2(0.0)); 
+    max(((abs(vPosition) - (1.0 - cornerRad)) / cornerRad), vec2(0.0));
+
+  float upp = fwidth(vPosition.x)/cornerRad.x;   // Units per pixel
 
   float len = length(cornerPos.xy);
-  gl_FragColor = texture2D(uTexture, vec2(0.5, len));
+
+  // Anti-alias over a window of one pixel width
+  float outFactor  = smoothstep(max(1.0-upp,EPSILON), 1.0, len);
+  float edgeFactor = smoothstep(max(1.0-upp*(uEdgeThick+1.0),EPSILON), 
+                                max(1.0-upp* uEdgeThick     ,EPSILON), len);
+
+  gl_FragColor    =  mix(uColorIn, uColorEdge, edgeFactor);
+  gl_FragColor.a *= (1.0 - outFactor);
 }
 """;
       
@@ -101,12 +89,15 @@ void main() {
     }
   }
   
-  void draw() {
+  void draw(Matrix4 projection) {
     _shader.use();
-    _gl.uniform2fv(_shader['uSize'],     _size.storage);
-    _gl.uniform2fv(_shader['uPosition'], _position.storage);
-    _gl.uniform1f( _shader['uRadius'],   0.1);
-    _gl.uniform1i( _shader['uTexture'],  0);
+    var mvp = projection * _modelProj;
+    _gl.uniformMatrix4fv(_shader['uProj'], false, mvp.storage);
+    _gl.uniform2fv(_shader['uSize'],       size.storage);
+    _gl.uniform1f(_shader['uRadius'],      radius);
+    _gl.uniform1f(_shader['uEdgeThick'],   edgeThick);
+    _gl.uniform4fv(_shader['uColorIn'],    inColor.storage);
+    _gl.uniform4fv(_shader['uColorEdge'],  edgeColor.storage);
 
     _gl.bindBuffer(webgl.ARRAY_BUFFER, _vboQuad);
     _gl.vertexAttribPointer(0, 2, webgl.FLOAT, false, 0, 0);

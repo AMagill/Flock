@@ -1,14 +1,18 @@
 import 'dart:html';
 import 'dart:web_gl' as webgl;
+import 'dart:math' as math;
 import 'package:vector_math/vector_math.dart';
 import 'package:vector_math/vector_math_lists.dart';
 import 'package:node_graph/node_graph.dart';
 
 int _width, _height;
 webgl.RenderingContext _gl;
-RoundedRect _node;
+double _zoom = 0.0;
+Vector2 _center;
+
+Graph _graph;
 Bezier _bezier;
-DistanceField _sdf;
+DistanceField _sdfText;
 TextLayout _text;
 
 void main() {
@@ -17,39 +21,67 @@ void main() {
   _height = canvas.height;
   _gl     = canvas.getContext("webgl");
 
-  _node = new RoundedRect(_gl, new Vector2(1.8, 0.2), new Vector2(0.0, 0.5));
+  var extStdDeriv = _gl.getExtension('OES_standard_derivatives');
+  //_gl.hint(webgl.OesStandardDerivatives.FRAGMENT_SHADER_DERIVATIVE_HINT_OES, webgl.FASTEST);
+
+  _graph = new Graph(_gl)
+    ..AddNode(new Vector2(1.0, 0.2), new Vector2(0.0, 0.1));
   _bezier = new Bezier(_gl, new Vector2List.fromList([
-    new Vector2(0.0, -0.1), new Vector2(0.0, -0.5),
+    new Vector2(0.0, -0.1), new Vector2(0.0, 0.0),
     new Vector2(0.5, -0.5), new Vector2(0.5, 0.0)]));
-  _sdf = new DistanceField(_gl);
-  _text = new TextLayout(_gl, _sdf, "Hello!");
-  //_sdf.loadUrl('/packages/node_graph/fonts/OpenSans-SDF.png',
-  //             '/packages/node_graph/fonts/OpenSans-SDF.json')
-  _sdf.loadUrl('/packages/node_graph/fonts/font.png',
-               '/packages/node_graph/fonts/font.json')
+
+  _sdfText = new DistanceField(_gl);
+  _text = new TextLayout(_gl, _sdfText);
+  _sdfText.loadUrl('/packages/node_graph/fonts/font.png',
+                   '/packages/node_graph/fonts/font.json')
+    .then((_) => _text.addString("WAFjords!", scale:1.0))
     .then((_) => render());
-  
   
   _gl.enable(webgl.BLEND);
   _gl.blendFunc(webgl.SRC_ALPHA, webgl.ONE_MINUS_SRC_ALPHA);
   _gl.clearColor(0.8, 0.8, 0.8, 1.0);
   
-  window.animationFrame
-    ..then((time) => animate(time));
+  
+  canvas.onMouseWheel.listen((e) {
+    _zoom += e.wheelDeltaY;
+    reProject();
+    scheduleRender();
+  });
+  
+  scheduleRender();
+}
+
+
+var proj = new Matrix4.identity();
+
+void reProject() {
+  proj = new Matrix4.identity();
+  proj.scale(math.pow(1.001, _zoom));  
 }
 
 void animate(double time) {
-  render();
+  /*
+  proj = new Matrix4.identity();
+  proj.translate(math.cos(time * 0.001) * 0.1, math.sin(time * 0.0015) * 0.1);
+  proj.rotateZ(math.sin(time * 0.001) * 0.1);
+  proj.scale((math.cos(time * 0.0005) + 1.1) * 16.0);
+  */
   
-  //window.animationFrame
-  //  ..then((time) => animate(time));
+  render();
+
+  // scheduleRender();
+}
+
+void scheduleRender() {
+  window.animationFrame
+    ..then((time) => animate(time));
 }
 
 void render() {
   _gl.clear(webgl.COLOR_BUFFER_BIT);
   
-  _node.draw();
-  _bezier.draw();
-  _text.draw();
+  _graph.draw(proj);
+  _bezier.draw(proj);
+  _text.draw(proj);
 }
 
