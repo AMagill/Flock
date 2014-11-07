@@ -25,7 +25,7 @@ void main() {
   //_gl.hint(webgl.OesStandardDerivatives.FRAGMENT_SHADER_DERIVATIVE_HINT_OES, webgl.FASTEST);
 
   _graph = new Graph(_gl)
-    ..AddNode(new Vector2(1.0, 0.2), new Vector2(0.0, 0.1));
+    ..addNode("add", x:0.0, y:0.1);
   _bezier = new Bezier(_gl, new Vector2List.fromList([
     new Vector2(0.0, -0.1), new Vector2(0.0, 0.0),
     new Vector2(0.5, -0.5), new Vector2(0.5, 0.0)]));

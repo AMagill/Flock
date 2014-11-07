@@ -11,12 +11,10 @@ class RoundedRect {
   Vector4 inColor, edgeColor;
   Matrix4 _modelProj = new Matrix4.identity();
   
-  RoundedRect(this._gl, {this.size, this.position, this.radius:0.05, 
+  RoundedRect(this._gl, {w:1.0, h:1.0, x:0.0, y:0.0, this.radius:0.05, 
     this.edgeThick:1.0, this.inColor, this.edgeColor}) {
-    if (size == null)
-      size = new Vector2(1.0, 1.0);
-    if (position == null)
-      position = new Vector2(0.0, 0.0);
+    size = new Vector2(w, h);
+    position = new Vector2(x, y);
     if (inColor == null)
       inColor   = new Vector4(0.5, 0.5, 0.5, 1.0);
     if (edgeColor == null)
