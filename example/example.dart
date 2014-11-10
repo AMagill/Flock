@@ -12,30 +12,27 @@ Vector2 _center;
 
 Graph _graph;
 Bezier _bezier;
-DistanceField _sdfText;
-TextLayout _text;
 
 void main() {
   var canvas = document.querySelector("#glCanvas");
   _width  = canvas.width;
   _height = canvas.height;
   _gl     = canvas.getContext("webgl");
-
+  
   var extStdDeriv = _gl.getExtension('OES_standard_derivatives');
   //_gl.hint(webgl.OesStandardDerivatives.FRAGMENT_SHADER_DERIVATIVE_HINT_OES, webgl.FASTEST);
 
+  var sdfText = new DistanceField(_gl);
+  sdfText.loadUrl('/packages/node_graph/fonts/font.png',
+                  '/packages/node_graph/fonts/font.json')
+    ..then((_) => scheduleRender());
+
   _graph = new Graph(_gl)
-    ..addNode("add", x:0.0, y:0.1);
+    ..addNode("addition", x:0.0, y:0.0);
   _bezier = new Bezier(_gl, new Vector2List.fromList([
     new Vector2(0.0, -0.1), new Vector2(0.0, 0.0),
     new Vector2(0.5, -0.5), new Vector2(0.5, 0.0)]));
 
-  _sdfText = new DistanceField(_gl);
-  _text = new TextLayout(_gl, _sdfText);
-  _sdfText.loadUrl('/packages/node_graph/fonts/font.png',
-                   '/packages/node_graph/fonts/font.json')
-    .then((_) => _text.addString("WAFjords!", scale:1.0))
-    .then((_) => render());
   
   _gl.enable(webgl.BLEND);
   _gl.blendFunc(webgl.SRC_ALPHA, webgl.ONE_MINUS_SRC_ALPHA);
@@ -82,6 +79,5 @@ void render() {
   
   _graph.draw(proj);
   _bezier.draw(proj);
-  _text.draw(proj);
 }
 

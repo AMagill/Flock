@@ -3,7 +3,7 @@ part of node_graph;
 class DistanceField {
   static Shader _shader;
 
-  webgl.RenderingContext _gl;
+  final webgl.RenderingContext gl;
   webgl.Texture _texture;
   var _atlas;
   StreamController _onLoadStreamController = new StreamController();
@@ -11,7 +11,7 @@ class DistanceField {
   Stream<Event> get onLoad => _onLoadStreamController.stream.asBroadcastStream();
   dynamic get atlas => _atlas;
 
-  DistanceField(this._gl) {
+  DistanceField(this.gl) {
     if (_shader == null) {
       var vertSource = 
 """
@@ -60,11 +60,11 @@ void main() {
 }
 """;
       
-      _shader = new Shader(_gl, vertSource, fragSource, 
+      _shader = new Shader(gl, vertSource, fragSource, 
           {'aPos': 0, 'aTex': 1, 'aColor': 2, 'aThreshold': 3});
     }
     
-    _texture = _gl.createTexture();
+    _texture = gl.createTexture();
   }
   
   Future loadUrl(String imgUrl, String atlasUrl) {
@@ -82,16 +82,16 @@ void main() {
   
   void bind() {
     if (_texture == null) return;
-    _gl.bindTexture(webgl.TEXTURE_2D, _texture);
+    gl.bindTexture(webgl.TEXTURE_2D, _texture);
     _shader.use();
-    _gl.uniform1i(_shader['uTexture'], 0);
+    gl.uniform1i(_shader['uTexture'], 0);
   }
   
   void _loadImage(ImageElement img) {
-    _gl.bindTexture(webgl.TEXTURE_2D, _texture);
-    _gl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_MIN_FILTER, webgl.LINEAR);
-    _gl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_MAG_FILTER, webgl.LINEAR);
-    _gl.texImage2DImage(webgl.TEXTURE_2D, 0, webgl.RGB, 
+    gl.bindTexture(webgl.TEXTURE_2D, _texture);
+    gl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_MIN_FILTER, webgl.LINEAR);
+    gl.texParameteri(webgl.TEXTURE_2D, webgl.TEXTURE_MAG_FILTER, webgl.LINEAR);
+    gl.texImage2DImage(webgl.TEXTURE_2D, 0, webgl.RGB, 
         webgl.RGB, webgl.UNSIGNED_BYTE, img);
   }
 

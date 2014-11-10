@@ -1,66 +1,119 @@
 part of node_graph;
 
 class TextLayout {
-  webgl.RenderingContext _gl;
+  final DistanceField _sdf;
+  final webgl.RenderingContext gl;
+
   Matrix4 _modelProj = new Matrix4.identity();
-  DistanceField _sdf;
   webgl.Buffer _vbo;
-  bool _initialized = false;
-  var _layout = new List<Map<String, double>>(); 
+  var _strings = [], _layout = null;
+  var _vboDirty = true;
 
   Matrix4 get modelProj => _modelProj;
   set modelProj(Matrix4 val) {
     _modelProj = val;
   }
 
-  TextLayout(this._gl, this._sdf) {
-    _vbo = _gl.createBuffer();
+  TextLayout(this.gl, this._sdf) {
+    _vbo = gl.createBuffer();
   }
   
-  void addString(String text, {double scale:1.0, Vector2 position,  
-      double hAlign:0.0, double vAlign:0.0, Vector3 color, double threshold:0.5}) {
-    if (position == null)
-      position = new Vector2(0.0, 0.0);
+  void addString(String text, {double scale:1.0, double x:0.0, double y:0.0,  
+    double hAlign:0.5, double vAlign:0.5, double r:0.0, double g:0.0, double b:0.0, 
+    double threshold:0.5}) {
     
-    var cursor = new Vector2.zero();
-    var lastGlyph = 0;
+    _strings.add({
+      "text":       text,
+      "scale":      scale,
+      "pos":        new Vector2(x, y),
+      "hAlign":     hAlign,
+      "vAlign":     vAlign,
+      "color":      new Vector3(r, g, b),
+      "threshold":  threshold,
+    });
+    
+    _layout = null; // Dirty
+  }
+    
+  void draw(Matrix4 projection) {
+    if (_layout == null) {
+      if (!_genLayout()) return;
+    }
+    if (_vboDirty) {
+      if (!_genBuffer()) return;
+    }
+    
+    _sdf.bind();
+    
+    gl.bindBuffer(webgl.ARRAY_BUFFER, _vbo);
+    gl.vertexAttribPointer(0, 2, webgl.FLOAT, false, 8*4, 0*4);  // position
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(1, 2, webgl.FLOAT, false, 8*4, 2*4);  // uv
+    gl.enableVertexAttribArray(1);
+    gl.vertexAttribPointer(2, 3, webgl.FLOAT, false, 8*4, 4*4);  // color
+    gl.enableVertexAttribArray(2);
+    gl.vertexAttribPointer(3, 1, webgl.FLOAT, false, 8*4, 7*4);  // threshold
+    gl.enableVertexAttribArray(3);
 
-    var glyphs   = new List<String>();
-    var glyphPos = new List<Vector2>();
+    var mvp = projection * _modelProj;
+    gl.uniformMatrix4fv(DistanceField._shader['uProj'], false, mvp.storage);
     
-    for (var ch in text.codeUnits) {
-      var glyph   = ch.toString();
-      var glyphInfo = _sdf.atlas[glyph];
-      final xo = glyphInfo['xoffset'];
-      final yo = -glyphInfo['yoffset'];
+    gl.drawArrays(webgl.TRIANGLES, 0, _layout.length*6);
+  }
+  
+  
+  bool _genLayout() {
+    if (_sdf.atlas == null) return false;
+
+    _layout = [];
+    
+    for (var str in _strings) {
+      if (_strings.length == 0)
+        continue;
       
-      // Apply kerning
-      if (lastGlyph != 0) {
-        if (_sdf.atlas[lastGlyph]['kernings'].containsKey(glyph)) {
-          var kern = _sdf.atlas[lastGlyph]['kernings'][glyph];
-          cursor.x += kern;
+      var cursor = new Vector2.zero();
+      var firstGlyphInfo = null, lastGlyphInfo = null;
+  
+      var glyphs   = new List<String>();
+      var glyphPos = new List<Vector2>();
+      
+      for (var ch in str['text'].codeUnits) {
+        var glyph     = ch.toString();
+        var glyphInfo = _sdf.atlas[glyph];
+        if (firstGlyphInfo == null)
+          firstGlyphInfo = glyphInfo;
+        
+        // Apply kerning
+        if (lastGlyphInfo != null) {
+          if (lastGlyphInfo['kernings'].containsKey(glyph)) {
+            var kern = lastGlyphInfo['kernings'][glyph];
+            cursor.x += kern;
+          }
         }
+        
+        glyphs.add(glyph);
+        glyphPos.add(cursor);
+        
+        cursor += new Vector2(glyphInfo['xadvance'], 0.0);
+        lastGlyphInfo = glyphInfo;
       }
       
-      glyphs.add(glyph);
-      glyphPos.add(position + cursor * scale);
+      var offset = new Vector2(
+          cursor.x * str['hAlign'], 
+          0.0);
       
-      cursor += new Vector2(glyphInfo['xadvance'], 0.0);
-      lastGlyph = glyph;
+      
+      for (int i = 0; i < glyphs.length; i++) {
+        _layoutGlyph(glyphs[i], scale:str['scale'], 
+            position: str['pos'] + (glyphPos[i] - offset) * str['scale'], 
+            color:str['color'], threshold:str['threshold']);
+      }
     }
     
-    var offset = new Vector2(
-        (cursor.x + _sdf.atlas[lastGlyph]['width']) * hAlign, 
-        0.0);
-    
-    for (int i = 0; i < glyphs.length; i++) {
-      addGlyph(glyphs[i], scale:scale, position:glyphPos[i] - offset, 
-          color:color, threshold:threshold);
-    }
-
+    return true;
   }
   
-  void addGlyph(String glyph, {double scale:1.0, Vector2 position, 
+  void _layoutGlyph(String glyph, {double scale:1.0, Vector2 position, 
       Vector3 color, double threshold:0.5}) {
     if (position == null)
       position = new Vector2.zero();
@@ -85,33 +138,10 @@ class TextLayout {
       'scale':      scale,
       'threshold':  threshold,
     });
-
-    _initialized = false; // The VBO is dirty now
+    
+    _vboDirty = true;
   }
-  
-  void draw(Matrix4 projection) {
-    if (!_initialized) {
-      if (!_genBuffer()) return;
-    }
-    
-    _sdf.bind();
-    
-    _gl.bindBuffer(webgl.ARRAY_BUFFER, _vbo);
-    _gl.vertexAttribPointer(0, 2, webgl.FLOAT, false, 8*4, 0*4);  // position
-    _gl.enableVertexAttribArray(0);
-    _gl.vertexAttribPointer(1, 2, webgl.FLOAT, false, 8*4, 2*4);  // uv
-    _gl.enableVertexAttribArray(1);
-    _gl.vertexAttribPointer(2, 3, webgl.FLOAT, false, 8*4, 4*4);  // color
-    _gl.enableVertexAttribArray(2);
-    _gl.vertexAttribPointer(3, 1, webgl.FLOAT, false, 8*4, 7*4);  // threshold
-    _gl.enableVertexAttribArray(3);
 
-    var mvp = projection * _modelProj;
-    _gl.uniformMatrix4fv(DistanceField._shader['uProj'], false, mvp.storage);
-    
-    _gl.drawArrays(webgl.TRIANGLES, 0, _layout.length*6);
-  }
-  
   bool _genBuffer() {
     if (_sdf.atlas == null) return false;
 
@@ -147,17 +177,17 @@ class TextLayout {
       vtTex[vi+5] = uv + new Vector2(0.0,    0.0    );
       
       for (var i = 0; i < 6; i++) {
-        vtCol[vi+i] = new Vector4(color.x, color.y, color.z, threshold);
+        vtCol[vi+i] = new Vector4(color.r, color.g, color.b, threshold);
         //vtThr[vi+i] = threshold;
       }
       
       vi += 6;
     }
     
-    _gl.bindBuffer(webgl.ARRAY_BUFFER, _vbo);
-    _gl.bufferDataTyped(webgl.ARRAY_BUFFER, vtAttributes, webgl.STATIC_DRAW);
-    
-    _initialized = true;
+    gl.bindBuffer(webgl.ARRAY_BUFFER, _vbo);
+    gl.bufferDataTyped(webgl.ARRAY_BUFFER, vtAttributes, webgl.STATIC_DRAW);
+
+    _vboDirty = false;
     return true;
   }
 }

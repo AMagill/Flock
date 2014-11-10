@@ -3,43 +3,45 @@ part of node_graph;
 abstract class BaseNode {
   final conSize = 0.06;
   
-  webgl.RenderingContext _gl;
   RoundedRect _rect;
-  List<RoundedRect> _inputs, _outputs;
-  Matrix4 _modelProj;
+  List<RoundedRect> _connectorRects;
+  Map<String, Vector2> connectorMap;
+  Matrix4 modelProj;
+  double _x, _y, width, height;
   
-  BaseNode(this._gl, {double w:1.0, double h:1.0, double x:0.0, double y:0.0, 
-    int nInputs:0, int nOutputs:0}) {
-    
-    _rect = new RoundedRect(_gl, w:w, h:h);
-    
-    _inputs  = new List<RoundedRect>();
-    for (var i = 0; i < nInputs; i++) {
-      var newNode = new RoundedRect(_gl, w:conSize, h:conSize, radius:conSize/2,
-          inColor:new Vector4(1.0,1.0,1.0,1.0), x:-w/2, y:h/2 - h*(i+1)/(nInputs+1));
-      _inputs.add(newNode);
-    }
-    
-    _outputs = new List<RoundedRect>();
-    for (var i = 0; i < nOutputs; i++) {
-      var newNode = new RoundedRect(_gl, w:conSize, h:conSize, radius:conSize/2,
-          inColor:new Vector4(1.0,1.0,1.0,1.0), x:w/2, y:h/2 - h*(i+1)/(nOutputs+1));
-      _outputs.add(newNode);
-    }
+  double get x => _x;
+  set x(double val) {
+     _x = val;
+     modelProj.setTranslationRaw(_x, _y, 0.0);
+  }
+  
+  double get y => _y;
+  set y(double val) {
+     _y = val;
+     modelProj.setTranslationRaw(_x, _y, 0.0);
+  }
 
-    _modelProj = new Matrix4.identity();
-    _modelProj.setTranslationRaw(x, y, 0.0);
+  BaseNode(Graph graph, this.width, this.height, this.connectorMap, 
+           {double x:0.0, double y:0.0}) {
+    _rect = new RoundedRect(graph.gl, w:width, h:height);
+    modelProj = new Matrix4.identity();
+    _connectorRects = new List<RoundedRect>();
+    _x = x;
+    _y = y;
+    modelProj.setTranslationRaw(_x, _y, 0.0);
+    
+    for (var item in connectorMap.values) {
+      _connectorRects.add(new RoundedRect(graph.gl, w:conSize, h:conSize, radius:conSize/2,
+          x:item.x, y:item.y, inColor:new Vector4(1.0,1.0,1.0,1.0)));
+    }
   }
   
   void draw(Matrix4 projection) {
-    var mvp = projection * _modelProj;
+    var mvp = projection * modelProj;
     
     _rect.draw(mvp);
-    for (var n in _inputs) {
-      n.draw(mvp);
-    }
-    for (var n in _outputs) {
-      n.draw(mvp);
+    for (var cc in _connectorRects) {
+      cc.draw(mvp);
     }
   }
 }

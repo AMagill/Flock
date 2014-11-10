@@ -5,14 +5,16 @@ class RoundedRect {
   static webgl.Texture _texture;
   static Shader _shader;
   
-  webgl.RenderingContext _gl;
+  final webgl.RenderingContext gl;
+  
   Vector2 size, position;
   double radius, edgeThick;
   Vector4 inColor, edgeColor;
   Matrix4 _modelProj = new Matrix4.identity();
   
-  RoundedRect(this._gl, {w:1.0, h:1.0, x:0.0, y:0.0, this.radius:0.05, 
+  RoundedRect(this.gl, {w:1.0, h:1.0, x:0.0, y:0.0, this.radius:0.05, 
     this.edgeThick:1.0, this.inColor, this.edgeColor}) {
+
     size = new Vector2(w, h);
     position = new Vector2(x, y);
     if (inColor == null)
@@ -27,9 +29,9 @@ class RoundedRect {
       var verts = new Float32List.fromList([
         1.0, -1.0,   1.0, 1.0,   -1.0, -1.0,   -1.0, 1.0]);
       
-      _vboQuad = _gl.createBuffer();
-      _gl.bindBuffer(webgl.ARRAY_BUFFER, _vboQuad);
-      _gl.bufferDataTyped(webgl.ARRAY_BUFFER, verts, webgl.STATIC_DRAW);
+      _vboQuad = gl.createBuffer();
+      gl.bindBuffer(webgl.ARRAY_BUFFER, _vboQuad);
+      gl.bufferDataTyped(webgl.ARRAY_BUFFER, verts, webgl.STATIC_DRAW);
     }
     
     if (_shader == null) {
@@ -83,26 +85,26 @@ void main() {
 }
 """;
       
-      _shader = new Shader(_gl, vertSource, fragSource, {'aPosition': 0});
+      _shader = new Shader(gl, vertSource, fragSource, {'aPosition': 0});
     }
   }
   
   void draw(Matrix4 projection) {
     _shader.use();
     var mvp = projection * _modelProj;
-    _gl.uniformMatrix4fv(_shader['uProj'], false, mvp.storage);
-    _gl.uniform2fv(_shader['uSize'],       size.storage);
-    _gl.uniform1f(_shader['uRadius'],      radius);
-    _gl.uniform1f(_shader['uEdgeThick'],   edgeThick);
-    _gl.uniform4fv(_shader['uColorIn'],    inColor.storage);
-    _gl.uniform4fv(_shader['uColorEdge'],  edgeColor.storage);
+    gl.uniformMatrix4fv(_shader['uProj'], false, mvp.storage);
+    gl.uniform2fv(_shader['uSize'],       size.storage);
+    gl.uniform1f(_shader['uRadius'],      radius);
+    gl.uniform1f(_shader['uEdgeThick'],   edgeThick);
+    gl.uniform4fv(_shader['uColorIn'],    inColor.storage);
+    gl.uniform4fv(_shader['uColorEdge'],  edgeColor.storage);
 
-    _gl.bindBuffer(webgl.ARRAY_BUFFER, _vboQuad);
-    _gl.vertexAttribPointer(0, 2, webgl.FLOAT, false, 0, 0);
-    _gl.enableVertexAttribArray(0);
+    gl.bindBuffer(webgl.ARRAY_BUFFER, _vboQuad);
+    gl.vertexAttribPointer(0, 2, webgl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(0);
     
-    _gl.bindTexture(webgl.TEXTURE_2D, _texture);
+    gl.bindTexture(webgl.TEXTURE_2D, _texture);
 
-    _gl.drawArrays(webgl.TRIANGLE_STRIP, 0, 4);
+    gl.drawArrays(webgl.TRIANGLE_STRIP, 0, 4);
   }
 }
