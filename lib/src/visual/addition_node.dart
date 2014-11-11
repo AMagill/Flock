@@ -12,7 +12,7 @@ class AdditionNode extends BaseNode {
   
   AdditionNode(Graph graph, {x:0.0, y:0.0}) : 
     super(graph, size, size, connectors, x:x, y:y) {
-    
+
     text = new TextLayout(graph.gl, graph.sdfText);
     text.addString('+', scale:1.5, x:-0.017, y:0.089);
   }

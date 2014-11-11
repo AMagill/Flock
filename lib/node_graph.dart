@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:html';
 import 'dart:async';
 import 'src/util/shader.dart';
+import 'src/util/pick_table.dart';
 
 part 'src/visual/rounded_rect.dart';
 part 'src/visual/bezier.dart';
