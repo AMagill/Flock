@@ -1,4 +1,4 @@
-part of node_graph;
+part of Flock;
 
 class TextLayout {
   final DistanceField _sdf;

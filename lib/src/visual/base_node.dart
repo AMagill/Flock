@@ -1,4 +1,4 @@
-part of node_graph;
+part of Flock;
 
 abstract class BaseNode {
   final conSize = 0.06;

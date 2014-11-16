@@ -1,8 +1,8 @@
-part of node_graph;
+part of Flock;
 
 class Graph {
-  final fontSrc = ['/packages/node_graph/fonts/font.png',
-                   '/packages/node_graph/fonts/font.json'];
+  final fontSrc = ['/packages/Flock/fonts/font.png',
+                   '/packages/Flock/fonts/font.json'];
 
   var _nodes = new List<BaseNode>();
   final webgl.RenderingContext gl;

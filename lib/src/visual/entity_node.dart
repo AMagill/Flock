@@ -1,4 +1,4 @@
-part of node_graph;
+part of Flock;
 
 class EntityNode extends BaseNode {
   EntityNode(Graph graph, {x:0.0, y:0.0}) : 

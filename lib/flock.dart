@@ -1,4 +1,4 @@
-library node_graph;
+library Flock;
 
 import 'dart:web_gl' as webgl;
 import 'package:vector_math/vector_math.dart';
@@ -9,6 +9,7 @@ import 'dart:html';
 import 'dart:async';
 import 'src/util/shader.dart';
 import 'src/util/pick_table.dart';
+import 'src/util/frame_buffer.dart';
 
 part 'src/visual/rounded_rect.dart';
 part 'src/visual/bezier.dart';
@@ -18,3 +19,4 @@ part 'src/visual/graph.dart';
 part 'src/visual/base_node.dart';
 part 'src/visual/entity_node.dart';
 part 'src/visual/addition_node.dart';
+part 'scene.dart';

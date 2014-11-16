@@ -1,24 +1,23 @@
-import 'dart:web_gl' as webgl;
-import 'package:vector_math/vector_math.dart';
-import 'package:vector_math/vector_math_lists.dart';
-import 'src/util/frame_buffer.dart';
-import 'node_graph.dart';
+part of Flock;
 
 class Scene {
   int width, height;
   webgl.RenderingContext gl;
   FrameBuffer pickBuf;
+  StreamController _onDirtyController = new StreamController(); 
   
   Graph _graph;
   Bezier _bezier;
+  
+  Stream get onDirty => _onDirtyController.stream;
   
   Scene(this.gl, this.width, this.height) {
     pickBuf = new FrameBuffer(gl, width, height);
 
     var sdfText = new DistanceField(gl);
-    sdfText.loadUrl('/packages/node_graph/fonts/font.png',
-                    '/packages/node_graph/fonts/font.json');
-//      ..then((_) => scheduleRender());
+    sdfText.loadUrl('/packages/Flock/fonts/font.png',
+                    '/packages/Flock/fonts/font.json')
+      ..then((_) => setDirty());
 
     _graph = new Graph(gl)
       ..addNode("addition", x:0.0, y:0.0);
@@ -31,16 +30,6 @@ class Scene {
     gl.blendFunc(webgl.SRC_ALPHA, webgl.ONE_MINUS_SRC_ALPHA);
     gl.clearColor(0.8, 0.8, 0.8, 1.0);
     
-    
-    String getPickTarget(int x, int y) {
-      return null;
-      /*
-      var pixel = new Uint8List(4);
-      pixel[1] = 42;
-      gl.readPixels(x, y, 1, 1, webgl.RGBA, webgl.UNSIGNED_BYTE, pixel);
-      
-     return new PickTable().lookup(pixel);*/
-    }
   }
   
   void animate(double time) {
@@ -58,8 +47,25 @@ class Scene {
     _bezier.draw(proj);
   }
   
+  void setDirty() {
+    if (_onDirtyController.hasListener && !_onDirtyController.isPaused)
+      _onDirtyController.add(null);
+  }
+  
+  String getPickTarget(int x, int y) {
+    var pixel = new Uint8List(4);
+    pixel[1] = 42;
+    
+    gl.bindFramebuffer(webgl.FRAMEBUFFER, pickBuf.fbo);
+    gl.readPixels(x, y, 1, 1, webgl.RGBA, webgl.UNSIGNED_BYTE, pixel);
+    gl.bindFramebuffer(webgl.FRAMEBUFFER, null);
+    
+   return new PickTable().lookup(pixel);
+  }
+
   void onMouseDown(int x, int y) {
-    print("MouseDown: ($x, $y)");
+    var target = getPickTarget(x, y);
+    print("MouseDown: ($x, $y)  Target: $target");
   }
 
   void onMouseUp(int x, int y) {

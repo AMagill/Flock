@@ -1,4 +1,4 @@
-part of node_graph;
+part of Flock;
 
 class RoundedRect {
   static webgl.Buffer _vboQuad;

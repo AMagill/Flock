@@ -2,8 +2,7 @@ import 'dart:html';
 import 'dart:web_gl' as webgl;
 import 'dart:math' as math;
 import 'package:vector_math/vector_math.dart';
-import 'package:Flock/node_graph.dart';
-import 'package:Flock/scene.dart';
+import 'package:Flock/flock.dart';
 
 int _width, _height;
 webgl.RenderingContext _gl;
@@ -23,7 +22,9 @@ void main() {
 
   _scene  = new Scene(_gl, _width, _height);
   
-  
+  _scene.onDirty.listen((e) {
+    scheduleRender();
+  });
   canvas.onMouseWheel.listen((e) {
     _zoom += e.wheelDeltaY;
     reProject();

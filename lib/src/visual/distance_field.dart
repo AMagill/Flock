@@ -1,4 +1,4 @@
-part of node_graph;
+part of Flock;
 
 class DistanceField {
   static Shader _shader;

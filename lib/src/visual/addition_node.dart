@@ -1,4 +1,4 @@
-part of node_graph;
+part of Flock;
 
 class AdditionNode extends BaseNode {
   static const size = 0.2;
@@ -20,6 +20,6 @@ class AdditionNode extends BaseNode {
   void draw(Matrix4 projection, [bool picking = false]) {
     super.draw(projection, picking);
     if (!picking)
-      text.draw(projection * super.modelProj, picking);
+      text.draw(projection * super.modelProj);
   }
 }
