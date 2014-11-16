@@ -1,4 +1,4 @@
-name: node_graph
+name: Flock
 description: A pub package
 dependencies:
   vector_math: any
