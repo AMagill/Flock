@@ -27,9 +27,22 @@ class Graph {
     
   }
   
-  void draw(Matrix4 projection) {
+  void draw(Matrix4 projection, [bool picking = false]) {
     for (var node in _nodes) {
-      node.draw(projection);
+      node.draw(projection, picking);
     }
+  }
+  
+  void onMouseDown(int x, int y) {
+    print("MouseDown: ($x, $y), pixel: $pixel, result: $result");
+  }
+
+  void onMouseUp(int x, int y) {
+  }
+
+  void onMouseMove(int x, int y) {
+  }
+  
+  void onMouseOut() {
   }
 }

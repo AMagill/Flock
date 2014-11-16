@@ -1,5 +1,7 @@
 library pick_table;
 
+import 'package:vector_math/vector_math.dart';
+
 class PickTable {
   static final PickTable _singleton = new PickTable._internal();
   
@@ -12,16 +14,18 @@ class PickTable {
   
   PickTable._internal();
   
-  int add(String value) {
+  Vector3 add(String value) {
     _seed = _lfsr(_seed);
     table[_seed] = value;
-    return _seed;
+    return new Vector3(((_seed>>16)&0xFF)/255.0, 
+                       ((_seed>> 8)&0xFF)/255.0,
+                       ((_seed    )&0xFF)/255.0);
   }
   
-  operator [](int key) {
-    return table[key];
+  String lookup(List<int> c) {
+    var seedVal = (c[0]<<16) + (c[1]<<8) + c[2];
+    return table[seedVal];
   }
-  
   
   int _lfsr(int n) {
     if ((n & 1) != 0)

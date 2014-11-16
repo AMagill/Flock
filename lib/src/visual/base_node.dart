@@ -23,25 +23,29 @@ abstract class BaseNode {
 
   BaseNode(Graph graph, this.width, this.height, this.connectorMap, 
            {double x:0.0, double y:0.0}) {
-    _rect = new RoundedRect(graph.gl, w:width, h:height);
+    var pickTable = new PickTable();
+    var pickColor = pickTable.add("Base");
+    
+    _rect = new RoundedRect(graph.gl, w:width, h:height, pickColor:pickColor);
     modelProj = new Matrix4.identity();
     _connectorRects = new List<RoundedRect>();
     _x = x;
     _y = y;
     modelProj.setTranslationRaw(_x, _y, 0.0);
     
-    for (var item in connectorMap.values) {
+    connectorMap.forEach((K,V) {
+      var pickColor = new PickTable().add(K);
       _connectorRects.add(new RoundedRect(graph.gl, w:conSize, h:conSize, radius:conSize/2,
-          x:item.x, y:item.y, inColor:new Vector4(1.0,1.0,1.0,1.0)));
-    }
+          x:V.x, y:V.y, inColor:new Vector4(1.0,1.0,1.0,1.0), pickColor:pickColor));      
+    });
   }
   
-  void draw(Matrix4 projection) {
+  void draw(Matrix4 projection, [bool picking = false]) {
     var mvp = projection * modelProj;
     
-    _rect.draw(mvp);
+    _rect.draw(mvp, picking);
     for (var cc in _connectorRects) {
-      cc.draw(mvp);
+      cc.draw(mvp, picking);
     }
   }
 }

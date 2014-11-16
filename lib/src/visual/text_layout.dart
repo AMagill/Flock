@@ -35,7 +35,7 @@ class TextLayout {
     _layout = null; // Dirty
   }
     
-  void draw(Matrix4 projection) {
+  void draw(Matrix4 projection, [bool picking = false]) {
     if (_layout == null) {
       if (!_genLayout()) return;
     }

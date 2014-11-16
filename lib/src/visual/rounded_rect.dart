@@ -2,18 +2,18 @@ part of node_graph;
 
 class RoundedRect {
   static webgl.Buffer _vboQuad;
-  static webgl.Texture _texture;
-  static Shader _shader;
+  static Shader _shader, _pickShader;
   
   final webgl.RenderingContext gl;
   
   Vector2 size, position;
   double radius, edgeThick;
   Vector4 inColor, edgeColor;
+  Vector3 pickColor;
   Matrix4 _modelProj = new Matrix4.identity();
   
   RoundedRect(this.gl, {w:1.0, h:1.0, x:0.0, y:0.0, this.radius:0.05, 
-    this.edgeThick:1.0, this.inColor, this.edgeColor}) {
+    this.edgeThick:1.0, this.inColor, this.edgeColor, this.pickColor}) {
 
     size = new Vector2(w, h);
     position = new Vector2(x, y);
@@ -21,9 +21,11 @@ class RoundedRect {
       inColor   = new Vector4(0.5, 0.5, 0.5, 1.0);
     if (edgeColor == null)
       edgeColor = new Vector4(0.0, 0.0, 0.0, 1.0);
+    if (pickColor == null)
+      pickColor = new Vector3(0.0, 0.0, 0.0);
     if (position != null)
       _modelProj.translate(position.x, position.y);
-
+    
     // Initialize the static variables, if they haven't already
     if (_vboQuad == null) {
       var verts = new Float32List.fromList([
@@ -86,25 +88,47 @@ void main() {
 """;
       
       _shader = new Shader(gl, vertSource, fragSource, {'aPosition': 0});
+      
+      var pickFragSource =
+"""
+precision mediump int;
+precision mediump float;
+
+varying vec2      vPosition;
+uniform vec3      uPickColor;
+
+void main() {
+  gl_FragColor = vec4(uPickColor, 1.0);
+}
+""";
+
+      _pickShader = new Shader(gl, vertSource, pickFragSource, {'aPosition': 0});
+
     }
   }
   
-  void draw(Matrix4 projection) {
-    _shader.use();
+  void draw(Matrix4 projection, [bool picking = false]) {
     var mvp = projection * _modelProj;
-    gl.uniformMatrix4fv(_shader['uProj'], false, mvp.storage);
-    gl.uniform2fv(_shader['uSize'],       size.storage);
-    gl.uniform1f(_shader['uRadius'],      radius);
-    gl.uniform1f(_shader['uEdgeThick'],   edgeThick);
-    gl.uniform4fv(_shader['uColorIn'],    inColor.storage);
-    gl.uniform4fv(_shader['uColorEdge'],  edgeColor.storage);
+
+    if (picking) {
+      _pickShader.use();
+      gl.uniformMatrix4fv(_pickShader['uProj'], false, mvp.storage);
+      gl.uniform2fv(_pickShader['uSize'],       size.storage);
+      gl.uniform3fv(_pickShader['uPickColor'],  pickColor.storage);      
+    } else {
+      _shader.use();
+      gl.uniformMatrix4fv(_shader['uProj'], false, mvp.storage);
+      gl.uniform2fv(_shader['uSize'],       size.storage);
+      gl.uniform1f(_shader['uRadius'],      radius);
+      gl.uniform1f(_shader['uEdgeThick'],   edgeThick);
+      gl.uniform4fv(_shader['uColorIn'],    inColor.storage);
+      gl.uniform4fv(_shader['uColorEdge'],  edgeColor.storage);      
+    }
 
     gl.bindBuffer(webgl.ARRAY_BUFFER, _vboQuad);
     gl.vertexAttribPointer(0, 2, webgl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(0);
     
-    gl.bindTexture(webgl.TEXTURE_2D, _texture);
-
-    gl.drawArrays(webgl.TRIANGLE_STRIP, 0, 4);
+     gl.drawArrays(webgl.TRIANGLE_STRIP, 0, 4);
   }
 }

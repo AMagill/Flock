@@ -17,8 +17,9 @@ class AdditionNode extends BaseNode {
     text.addString('+', scale:1.5, x:-0.017, y:0.089);
   }
   
-  void draw(Matrix4 projection) {
-    super.draw(projection);
-    text.draw(projection * super.modelProj);
+  void draw(Matrix4 projection, [bool picking = false]) {
+    super.draw(projection, picking);
+    if (!picking)
+      text.draw(projection * super.modelProj, picking);
   }
 }
