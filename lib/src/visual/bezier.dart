@@ -90,10 +90,10 @@ void main() {
       var p1 = _points[i*4+1];
       var p2 = _points[i*4+3];
       var p3 = _points[i*4+2];
-      var a = -p0 + p1*3.0 - p2*3.0 + p3;
-      var b = p0*3.0 - p1*6.0 + p2*3.0;
-      var c = p0*3.0 + p1*3.0;
-      var d = p0;
+      var a = -p0     + p1*3.0 - p2*3.0 + p3;
+      var b =  p0*3.0 - p1*6.0 + p2*3.0;
+      var c = -p0*3.0 + p1*3.0;
+      var d =  p0;
       
       Vector2 pt0, pt1;
       for (var j = 0; j <= _divisions; j++) {
