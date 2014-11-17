@@ -99,8 +99,8 @@ void main() {
       for (var j = 0; j <= _divisions; j++) {
         var t = j / _divisions;
         
-        var pos  = a*(t*t*t) + b*(t*t) + c*t + d;
-        var tan  = a*(t*t*3.0) + b*(t*2.0) + c;
+        var pos  = ((a*t + b)*t + c)*t + d;
+        var tan  = (a*t*3.0 + b*2.0)*t + c;
         tan.normalize();
         var norm = new Vector2(-tan.y, tan.x);
         
