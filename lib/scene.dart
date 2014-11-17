@@ -11,10 +11,10 @@ class Scene {
   Vector3 viewCenter = new Vector3(0.0, 0.0, 0.0);
   
   Graph _graph;
-  Bezier _bezier;
+  ConnectorLine _line;
   
-  bool _draggingCanvas = false;
-  BaseNode _draggingNode;
+  String _dragging = "";
+  Object _draggingObj;
   Vector4 _lastMouse = new Vector4.zero();
   
   Stream get onDirty => _onDirtyController.stream;
@@ -28,13 +28,12 @@ class Scene {
       ..then((_) => setDirty());
 
     _graph = new Graph(gl)
-      ..addNode("addition", x:1.0, y:1.0);
-    _bezier = new Bezier(gl, new Vector2List.fromList([
-      new Vector2(0.0, -0.1), new Vector2(0.0, 0.0),
-      new Vector2(0.5, -0.5), new Vector2(0.5, 0.0)]));
+      ..addNode("addition", x:-0.5, y:0.0)
+      ..addNode("addition", x: 0.5);
+    
+    _line = new ConnectorLine(gl);
     
     reproject();
-
     
     gl.enable(webgl.BLEND);
     gl.blendFunc(webgl.SRC_ALPHA, webgl.ONE_MINUS_SRC_ALPHA);
@@ -54,7 +53,10 @@ class Scene {
     gl.clearColor(0.8, 0.8, 0.8, 1.0);
     gl.clear(webgl.COLOR_BUFFER_BIT);
     _graph.draw(viewProjection);
-    _bezier.draw(viewProjection);
+    
+    if (_dragging.startsWith("line")) {
+      _line.draw(viewProjection);
+    }
   }
   
   void reproject() {
@@ -78,8 +80,6 @@ class Scene {
     gl.readPixels(x, height-y, 1, 1, webgl.RGBA, webgl.UNSIGNED_BYTE, pixel);
     gl.bindFramebuffer(webgl.FRAMEBUFFER, null);
     
-    print("Picking $pixel");
-    
     return new PickTable().lookup(pixel);
   }
   
@@ -92,10 +92,23 @@ class Scene {
     _lastMouse = unproject(e.layer.x, e.layer.y);
     
     if (target == null) {
-      _draggingCanvas = true;
+      _dragging = "canvas";
     } else if (target.obj is BaseNode) {
-      _draggingNode = target.obj;
+      if (target.str == "base") {
+        _dragging    = "node";
+        _draggingObj = target.obj;        
+      } else if (target.str.startsWith("in")) {
+        _dragging    = "lineEnd";
+        _draggingObj = target.obj;
+        setDirty();
+      } else if (target.str.startsWith("out")) {
+        _dragging    = "lineStart";
+        _draggingObj = target.obj;
+        setDirty();
+      }
     }
+    
+    e.preventDefault();
   }
 
   void onMouseMove(MouseEvent e) {
@@ -103,28 +116,37 @@ class Scene {
     var delta      = worldCoord - _lastMouse;
     _lastMouse     = worldCoord;
     
-    if (_draggingCanvas) {
-      viewCenter -= delta.xyz;
-      _lastMouse -= delta;
-      reproject();
-      setDirty();
-      return;
-    }
-    if (_draggingNode != null) {
-      _draggingNode.x += delta.x;
-      _draggingNode.y += delta.y;
-      setDirty();
+    switch (_dragging) {
+      case "canvas":
+        viewCenter -= delta.xyz;
+        _lastMouse -= delta;
+        reproject();
+        setDirty();
+        break;
+      case "node":
+        (_draggingObj as BaseNode).x += delta.x;
+        (_draggingObj as BaseNode).y += delta.y;
+        setDirty();
+        break;
+      case "lineStart":
+        _line.fromPt = worldCoord.xy;
+        setDirty();
+        break;
+      case "lineEnd":
+        _line.toPt = worldCoord.xy;
+        setDirty();
+        break;
     }
   }
   
   void onMouseUp(MouseEvent e) {
-    _draggingCanvas = false;
-    _draggingNode = null;
+    _dragging = "";
+    setDirty();
   }
 
   void onMouseOut(MouseEvent e) {
-    _draggingCanvas = false;
-    _draggingNode = null;
+    _dragging = "";
+    setDirty();
   }
   
   void onMouseWheel(WheelEvent e) {

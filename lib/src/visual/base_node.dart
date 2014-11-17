@@ -24,7 +24,7 @@ abstract class BaseNode {
   BaseNode(Graph graph, this.width, this.height, this.connectorMap, 
            {double x:0.0, double y:0.0}) {
     var pickTable = new PickTable();
-    var pickColor = pickTable.add(this, "Base");
+    var pickColor = pickTable.add(this, "base");
     
     _rect = new RoundedRect(graph.gl, w:width, h:height, pickColor:pickColor);
     modelProj = new Matrix4.identity();
