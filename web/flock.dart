@@ -22,63 +22,18 @@ void main() {
 
   _scene  = new Scene(_gl, _width, _height);
   
-  _scene.onDirty.listen((e) {
-    scheduleRender();
-  });
-  canvas.onMouseWheel.listen((e) {
-    _zoom += e.wheelDeltaY;
-    reProject();
-    scheduleRender();
-  });
-  canvas.onMouseDown.listen((e) {
-    var x = e.layer.x;
-    var y = e.layer.y;
-    _scene.onMouseDown(x, y);    
-  });
-  canvas.onMouseUp.listen((e) {
-    var x = e.layer.x;
-    var y = e.layer.y;
-    _scene.onMouseUp(x, y);    
-  });
-  canvas.onMouseMove.listen((e) {
-    var x = e.layer.x;
-    var y = e.layer.y;
-    _scene.onMouseMove(x, y);    
-  });
-  canvas.onMouseOut.listen((e) {
-    _scene.onMouseOut();
-  });
+  _scene.onDirty.listen((e)      => scheduleRender());
+  canvas.onMouseWheel.listen((e) => _scene.onMouseWheel(e));
+  canvas.onMouseDown.listen((e)  => _scene.onMouseDown(e));    
+  canvas.onMouseUp.listen((e)    => _scene.onMouseUp(e));    
+  canvas.onMouseMove.listen((e)  => _scene.onMouseMove(e));    
+  canvas.onMouseOut.listen((e)   => _scene.onMouseOut(e));
   
   scheduleRender();
 }
 
-
-var proj = new Matrix4.identity();
-
-void reProject() {
-  proj = new Matrix4.identity();
-  proj.scale(math.pow(1.001, _zoom));  
-}
-
-void animate(double time) {
-  /*
-  proj = new Matrix4.identity();
-  proj.translate(math.cos(time * 0.001) * 0.1, math.sin(time * 0.0015) * 0.1);
-  proj.rotateZ(math.sin(time * 0.001) * 0.1);
-  proj.scale((math.cos(time * 0.0005) + 1.1) * 16.0);
-  */
-  
-  render();
-
-  // scheduleRender();
-}
-
 void scheduleRender() {
   window.animationFrame
-    ..then((time) => animate(time));
-}
-
-void render() {
-  _scene.draw(proj);
+    ..then((time) => _scene.draw());
 }
 

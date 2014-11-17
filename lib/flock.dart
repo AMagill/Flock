@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'dart:convert'; 
 import 'dart:html';
 import 'dart:async';
+import 'dart:math' as math;
 import 'src/util/shader.dart';
 import 'src/util/pick_table.dart';
 import 'src/util/frame_buffer.dart';

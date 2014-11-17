@@ -24,7 +24,7 @@ abstract class BaseNode {
   BaseNode(Graph graph, this.width, this.height, this.connectorMap, 
            {double x:0.0, double y:0.0}) {
     var pickTable = new PickTable();
-    var pickColor = pickTable.add("Base");
+    var pickColor = pickTable.add(this, "Base");
     
     _rect = new RoundedRect(graph.gl, w:width, h:height, pickColor:pickColor);
     modelProj = new Matrix4.identity();
@@ -34,7 +34,7 @@ abstract class BaseNode {
     modelProj.setTranslationRaw(_x, _y, 0.0);
     
     connectorMap.forEach((K,V) {
-      var pickColor = new PickTable().add(K);
+      var pickColor = new PickTable().add(this, K);
       _connectorRects.add(new RoundedRect(graph.gl, w:conSize, h:conSize, radius:conSize/2,
           x:V.x, y:V.y, inColor:new Vector4(1.0,1.0,1.0,1.0), pickColor:pickColor));      
     });
