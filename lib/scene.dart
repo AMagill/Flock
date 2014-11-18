@@ -98,12 +98,16 @@ class Scene {
         _dragging    = "node";
         _draggingObj = target.obj;        
       } else if (target.str.startsWith("in")) {
-        _dragging    = "lineEnd";
-        _draggingObj = target.obj;
-        setDirty();
-      } else if (target.str.startsWith("out")) {
         _dragging    = "lineStart";
         _draggingObj = target.obj;
+        _line.toPt   = _lastMouse.xy;
+        _line.fromPt = _lastMouse.xy;
+        setDirty();
+      } else if (target.str.startsWith("out")) {
+        _dragging    = "lineEnd";
+        _draggingObj = target.obj;
+        _line.toPt   = _lastMouse.xy;
+        _line.fromPt = _lastMouse.xy;
         setDirty();
       }
     }
