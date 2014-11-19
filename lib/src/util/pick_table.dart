@@ -2,17 +2,10 @@ library pick_table;
 
 import 'package:vector_math/vector_math.dart';
 
-class PickTarget {
-  final Object obj;
-  final String str;
-  PickTarget(this.obj, this.str);
-  String toString() => obj.toString() + " " + str;
-}
-
 class PickTable {
   static final PickTable _singleton = new PickTable._internal();
   
-  final table = new Map<int, PickTarget>();
+  final table = new Map<int, Object>();
   int _seed = 1;
   
   factory PickTable() {
@@ -23,13 +16,13 @@ class PickTable {
   
   Vector3 add(Object obj, String str) {
     _seed = _lfsr(_seed);
-    table[_seed] = new PickTarget(obj, str);
+    table[_seed] = obj;
     return new Vector3(((_seed>>16)&0xFF)/255.0, 
                        ((_seed>> 8)&0xFF)/255.0,
                        ((_seed    )&0xFF)/255.0);
   }
   
-  PickTarget lookup(List<int> c) {
+  Object lookup(List<int> c) {
     var seedVal = (c[0]<<16) + (c[1]<<8) + c[2];
     return table[seedVal];
   }

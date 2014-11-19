@@ -14,7 +14,7 @@ class Scene {
   ConnectorLine _line;
   
   String _dragging = "";
-  Object _draggingObj;
+  Object _dragObject;
   Vector4 _lastMouse = new Vector4.zero();
   
   Stream get onDirty => _onDirtyController.stream;
@@ -72,7 +72,7 @@ class Scene {
       _onDirtyController.add(null);
   }
   
-  PickTarget getPickTarget(int x, int y) {
+  Object getPickObject(int x, int y) {
     var pixel = new Uint8List(4);
     pixel[1] = 42;
     
@@ -88,34 +88,27 @@ class Scene {
   }
 
   void onMouseDown(MouseEvent e) {
-    var target = getPickTarget(e.layer.x, e.layer.y);
+    var target = getPickObject(e.layer.x, e.layer.y);
     _lastMouse = unproject(e.layer.x, e.layer.y);
     
     if (target == null) {
       _dragging = "canvas";
-    } else if (target.obj is BaseNode) {
-      if (target.str == "base") {
-        _dragging    = "node";
-        _draggingObj = target.obj;        
-      } else if (target.str.startsWith("in")) {
-        _dragging    = "lineStart";
-        _draggingObj = target.obj;
-        _line.toPt   = _lastMouse.xy;
-        _line.fromPt = _lastMouse.xy;
-        setDirty();
-      } else if (target.str.startsWith("out")) {
-        _dragging    = "lineEnd";
-        _draggingObj = target.obj;
-        _line.toPt   = _lastMouse.xy;
-        _line.fromPt = _lastMouse.xy;
-        setDirty();
-      }
+    } else if (target is BaseNode) {
+      _dragging    = "node";
+      _dragObject  = target;
+    } else if (target is Connector) {
+      _dragging    = (target as Connector).isOut ? "lineEnd" : "lineStart";
+      _dragObject  = target;        
+      _line.toPt   = (target as Connector).worldPos;
+      _line.fromPt = (target as Connector).worldPos;
+      setDirty();
     }
     
     e.preventDefault();
   }
 
   void onMouseMove(MouseEvent e) {
+    var target     = getPickObject(e.layer.x, e.layer.y);
     var worldCoord = unproject(e.layer.x, e.layer.y);
     var delta      = worldCoord - _lastMouse;
     _lastMouse     = worldCoord;
@@ -128,22 +121,48 @@ class Scene {
         setDirty();
         break;
       case "node":
-        (_draggingObj as BaseNode).x += delta.x;
-        (_draggingObj as BaseNode).y += delta.y;
+        (_dragObject as BaseNode).x += delta.x;
+        (_dragObject as BaseNode).y += delta.y;
         setDirty();
         break;
       case "lineStart":
-        _line.fromPt = worldCoord.xy;
+        if (target is Connector && target.isOut &&
+            target.node != (_dragObject as Connector).node) {
+          _line.fromPt = (target as Connector).worldPos;
+        } else {
+          _line.fromPt = worldCoord.xy;          
+        }
         setDirty();
         break;
       case "lineEnd":
-        _line.toPt = worldCoord.xy;
+        if (target is Connector && !target.isOut &&
+            target.node != (_dragObject as Connector).node) {
+          _line.toPt = (target as Connector).worldPos;
+        } else {
+          _line.toPt = worldCoord.xy;
+        }
         setDirty();
         break;
     }
   }
   
   void onMouseUp(MouseEvent e) {
+    var target = getPickObject(e.layer.x, e.layer.y);
+    switch (_dragging) {
+      case "lineStart":
+        if (target is Connector && target.isOut &&
+            target.node != (_dragObject as Connector).node) {
+          _graph.connect(target, _dragObject);
+        }        
+        break;
+      case "lineEnd":
+        if (target is Connector && !target.isOut &&
+            target.node != (_dragObject as Connector).node) {
+          _graph.connect(_dragObject, target);
+        }
+        break;
+    }
+    
     _dragging = "";
     setDirty();
   }

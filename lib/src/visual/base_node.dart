@@ -1,12 +1,10 @@
 part of Flock;
 
 abstract class BaseNode {
-  final conSize = 0.06;
-  
+  Graph graph;
   RoundedRect _rect;
-  List<RoundedRect> _connectorRects;
-  Map<String, Vector2> connectorMap;
-  Matrix4 modelProj;
+  List<Connector> connectors = new List<Connector>();
+  Matrix4 modelProj = new Matrix4.identity();
   double _x, _y, width, height;
   
   double get x => _x;
@@ -21,31 +19,23 @@ abstract class BaseNode {
      modelProj.setTranslationRaw(_x, _y, 0.0);
   }
 
-  BaseNode(Graph graph, this.width, this.height, this.connectorMap, 
+  BaseNode(this.graph, this.width, this.height,
            {double x:0.0, double y:0.0}) {
     var pickTable = new PickTable();
     var pickColor = pickTable.add(this, "base");
     
     _rect = new RoundedRect(graph.gl, w:width, h:height, pickColor:pickColor);
-    modelProj = new Matrix4.identity();
-    _connectorRects = new List<RoundedRect>();
     _x = x;
     _y = y;
     modelProj.setTranslationRaw(_x, _y, 0.0);
-    
-    connectorMap.forEach((K,V) {
-      var pickColor = new PickTable().add(this, K);
-      _connectorRects.add(new RoundedRect(graph.gl, w:conSize, h:conSize, radius:conSize/2,
-          x:V.x, y:V.y, inColor:new Vector4(1.0,1.0,1.0,1.0), pickColor:pickColor));      
-    });
   }
   
   void draw(Matrix4 projection, [bool picking = false]) {
     var mvp = projection * modelProj;
     
     _rect.draw(mvp, picking);
-    for (var cc in _connectorRects) {
-      cc.draw(mvp, picking);
+    for (var con in connectors) {
+      con.draw(mvp, picking);
     }
   }
 }

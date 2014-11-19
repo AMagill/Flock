@@ -2,16 +2,15 @@ part of Flock;
 
 class AdditionNode extends BaseNode {
   static const size = 0.2;
-  static final connectors = {
-    'inA': new Vector2(-size/2,  size/5),
-    'inB': new Vector2(-size/2, -size/5),
-    'out': new Vector2( size/2,  0.0),
-  };
   
   TextLayout text;
   
   AdditionNode(Graph graph, {x:0.0, y:0.0}) : 
-    super(graph, size, size, connectors, x:x, y:y) {
+    super(graph, size, size, x:x, y:y) {
+    
+    connectors.add(new Connector(this, 'inA', false, -size/2,  size/5));
+    connectors.add(new Connector(this, 'inB', false, -size/2, -size/5));
+    connectors.add(new Connector(this, 'out', true,   size/2,  0.0   ));
 
     text = new TextLayout(graph.gl, graph.sdfText);
     text.addString('+', scale:1.5, x:-0.017, y:0.089);

@@ -1,9 +1,9 @@
 part of Flock;
 
 class Bezier {
-  static webgl.Buffer _vboLine;
   static Shader _shader;
   
+  webgl.Buffer _vboLine;
   webgl.RenderingContext _gl;
   Vector2List _points;
   int _divisions, _nLines;
@@ -28,7 +28,7 @@ class Bezier {
     _generateBuffer();
   }
   
-  Bezier(this._gl, [this._points = null, this._thick = 0.01, this._divisions = 16]) {
+  Bezier(this._gl, [this._points = null, this._thick = 0.01, this._divisions = 32]) {
     if (this._divisions < 1)
       throw new ArgumentError('Divisions must be greater than zero.');
     
@@ -63,7 +63,7 @@ void main() {
     _generateBuffer();
   }
   
-  void draw(Matrix4 projection) {
+  void draw(Matrix4 projection, [bool picking = false]) {
     _shader.use();
 
     _gl.lineWidth(4.0);

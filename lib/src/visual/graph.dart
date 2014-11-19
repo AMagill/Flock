@@ -4,7 +4,9 @@ class Graph {
   final fontSrc = ['/packages/Flock/fonts/font.png',
                    '/packages/Flock/fonts/font.json'];
 
-  var _nodes = new List<BaseNode>();
+  var nodes = new List<BaseNode>();
+  var connectionLines = new List<ConnectorLine>();
+  
   final webgl.RenderingContext gl;
   final sdfText;
   
@@ -17,10 +19,10 @@ class Graph {
   void addNode(String type, {x:0.0, y:0.0, Vector2 position}) {
     switch (type.toLowerCase()) {
       case "entity":
-        _nodes.add(new EntityNode(this, x:x, y:y));
+        nodes.add(new EntityNode(this, x:x, y:y));
         break;
       case "addition":
-        _nodes.add(new AdditionNode(this, x:x, y:y));
+        nodes.add(new AdditionNode(this, x:x, y:y));
         break;
       default:
     }
@@ -28,8 +30,21 @@ class Graph {
   }
   
   void draw(Matrix4 projection, [bool picking = false]) {
-    for (var node in _nodes) {
+    for (var node in nodes) {
       node.draw(projection, picking);
     }
+    
+    if (!picking) {
+      for (var line in connectionLines) {
+        line.draw(projection, picking);
+      }
+    }
+  }
+  
+  void connect(Connector outCon, Connector inCon) {
+    var newLine = new ConnectorLine(gl)
+      ..fromPt = outCon.worldPos
+      ..toPt   = inCon.worldPos;
+    connectionLines.add(newLine);
   }
 }
