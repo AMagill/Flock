@@ -10,6 +10,8 @@ class Connector {
   final BaseNode node;
   final bool     isOut;
   
+  Set<Connector> connections = new Set<Connector>();
+  
   RoundedRect _rect;
   
   Vector2 get worldPos => (node.modelProj * new Vector4(pos.x, pos.y, 0.0, 1.0)).xy;

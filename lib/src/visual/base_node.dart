@@ -5,18 +5,26 @@ abstract class BaseNode {
   RoundedRect _rect;
   List<Connector> connectors = new List<Connector>();
   Matrix4 modelProj = new Matrix4.identity();
-  double _x, _y, width, height;
+  double width, height;
+  Vector2 _pos;
   
-  double get x => _x;
-  set x(double val) {
-     _x = val;
-     modelProj.setTranslationRaw(_x, _y, 0.0);
-  }
-  
-  double get y => _y;
-  set y(double val) {
-     _y = val;
-     modelProj.setTranslationRaw(_x, _y, 0.0);
+  Vector2 get pos => _pos;
+  set pos(Vector2 val) {
+     _pos = val;
+     modelProj.setTranslationRaw(val.x, val.y, 0.0);
+     
+     // Update connector lines
+     for (var con in connectors) {
+       for (var other in con.connections) {
+         if (con.isOut) {
+           var line = graph.connectionLines[other];
+           line.fromPt = con.worldPos;
+         } else {
+           var line = graph.connectionLines[con];
+           line.toPt = con.worldPos;
+         }
+       }
+     }
   }
 
   BaseNode(this.graph, this.width, this.height,
@@ -25,9 +33,8 @@ abstract class BaseNode {
     var pickColor = pickTable.add(this, "base");
     
     _rect = new RoundedRect(graph.gl, w:width, h:height, pickColor:pickColor);
-    _x = x;
-    _y = y;
-    modelProj.setTranslationRaw(_x, _y, 0.0);
+    _pos  = new Vector2(x, y);
+    modelProj.setTranslationRaw(x, y, 0.0);
   }
   
   void draw(Matrix4 projection, [bool picking = false]) {

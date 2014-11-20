@@ -4,8 +4,8 @@ class Graph {
   final fontSrc = ['/packages/Flock/fonts/font.png',
                    '/packages/Flock/fonts/font.json'];
 
-  var nodes = new List<BaseNode>();
-  var connectionLines = new List<ConnectorLine>();
+  List<BaseNode> nodes = [];
+  Map<Connector, ConnectorLine> connectionLines = {};
   
   final webgl.RenderingContext gl;
   final sdfText;
@@ -35,16 +35,29 @@ class Graph {
     }
     
     if (!picking) {
-      for (var line in connectionLines) {
+      for (var line in connectionLines.values) {
         line.draw(projection, picking);
       }
     }
   }
   
   void connect(Connector outCon, Connector inCon) {
+    disconnect(inCon);
+    
     var newLine = new ConnectorLine(gl)
       ..fromPt = outCon.worldPos
       ..toPt   = inCon.worldPos;
-    connectionLines.add(newLine);
+    connectionLines[inCon] = newLine;
+    outCon.connections.add(inCon);
+    inCon.connections.add(outCon);
+  }
+  
+  void disconnect(Connector inCon) {
+    // There should never be more than one
+    for (var other in inCon.connections) {
+      connectionLines.remove(inCon);
+      other.connections.remove(inCon);
+    }
+    inCon.connections.clear();
   }
 }

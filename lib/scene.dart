@@ -28,7 +28,8 @@ class Scene {
       ..then((_) => setDirty());
 
     _graph = new Graph(gl)
-      ..addNode("addition", x:-0.5, y:0.0)
+      ..addNode("addition", x:-0.5, y:-0.25)
+      ..addNode("addition", x:-0.5, y: 0.25)
       ..addNode("addition", x: 0.5);
     
     _line = new ConnectorLine(gl);
@@ -97,6 +98,9 @@ class Scene {
       _dragging    = "node";
       _dragObject  = target;
     } else if (target is Connector) {
+      if (!(target as Connector).isOut) {
+        _graph.disconnect(target);
+      }
       _dragging    = (target as Connector).isOut ? "lineEnd" : "lineStart";
       _dragObject  = target;        
       _line.toPt   = (target as Connector).worldPos;
@@ -121,8 +125,7 @@ class Scene {
         setDirty();
         break;
       case "node":
-        (_dragObject as BaseNode).x += delta.x;
-        (_dragObject as BaseNode).y += delta.y;
+        (_dragObject as BaseNode).pos += delta.xy;
         setDirty();
         break;
       case "lineStart":
