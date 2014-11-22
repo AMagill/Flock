@@ -30,9 +30,10 @@ abstract class BaseNode {
   BaseNode(this.graph, this.width, this.height,
            {double x:0.0, double y:0.0}) {
     var pickTable = new PickTable();
-    var pickColor = pickTable.add(this, "base");
+    var pickColor = pickTable.add(this);
     
-    _rect = new RoundedRect(graph.gl, w:width, h:height, pickColor:pickColor);
+    _rect = new RoundedRect(graph.gl)
+      ..addRect(0.0, 0.0, width, height, pickColor: pickColor);
     _pos  = new Vector2(x, y);
     modelProj.setTranslationRaw(x, y, 0.0);
   }
@@ -41,8 +42,6 @@ abstract class BaseNode {
     var mvp = projection * modelProj;
     
     _rect.draw(mvp, picking);
-    for (var con in connectors) {
-      con.draw(mvp, picking);
-    }
+
   }
 }

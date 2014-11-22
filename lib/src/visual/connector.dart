@@ -1,6 +1,6 @@
 part of Flock;
 
-// This should probably only be used in BaseNode.
+// This should only be used in BaseNode.
 class Connector {
   final inColor = new Vector4(1.0,1.0,1.0,1.0);
   final size = 0.06;
@@ -19,12 +19,7 @@ class Connector {
   Connector(this.node, this.name, this.isOut, double x, double y) :
     pos = new Vector2(x, y)  {
     
-    var pickColor = new PickTable().add(this, "con");
-    _rect = new RoundedRect(node.graph.gl, w:size, h:size, radius:size/2,
-        x:x, y:y, inColor:inColor, pickColor:pickColor);
-  }
-  
-  void draw(Matrix4 proj, [bool picking = false]) {
-    _rect.draw(proj, picking);
+    var pickColor = new PickTable().add(this);
+    node._rect.addRect(x, y, size, size, radius:size/2, inColor:inColor, pickColor:pickColor);
   }
 }

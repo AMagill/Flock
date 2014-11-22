@@ -14,7 +14,7 @@ class PickTable {
   
   PickTable._internal();
   
-  Vector3 add(Object obj, String str) {
+  Vector3 add(Object obj) {
     _seed = _lfsr(_seed);
     table[_seed] = obj;
     return new Vector3(((_seed>>16)&0xFF)/255.0, 
