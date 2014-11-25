@@ -12,6 +12,7 @@ class Scene {
   
   Graph _graph;
   ConnectorLine _line;
+  NodeGallery _gallery;
   
   String _dragging = "";
   Object _dragObject;
@@ -27,12 +28,10 @@ class Scene {
                     '/packages/Flock/fonts/font.json')
       ..then((_) => setDirty());
 
-    _graph = new Graph(gl)
-      ..addNode("addition", x:-0.5, y:-0.25)
-      ..addNode("addition", x:-0.5, y: 0.25)
-      ..addNode("addition", x: 0.5);
-    
+    _graph = new Graph(gl);
     _line = new ConnectorLine(gl);
+    
+    _gallery = new NodeGallery(_graph, "+-*/", 1, x:-0.75);
     
     reproject();
     
@@ -45,19 +44,25 @@ class Scene {
   }
   
   void draw() {
+    void drawPicking() {
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      gl.clear(webgl.COLOR_BUFFER_BIT);
+      _gallery.draw(viewProjection, true);      
+      _graph.draw(viewProjection, true);      
+    }
+    
     gl.bindFramebuffer(webgl.FRAMEBUFFER, pickBuf.fbo);
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(webgl.COLOR_BUFFER_BIT);
-    _graph.draw(viewProjection, true);
+    drawPicking();
     
     gl.bindFramebuffer(webgl.FRAMEBUFFER, null);
     gl.clearColor(0.8, 0.8, 0.8, 1.0);
     gl.clear(webgl.COLOR_BUFFER_BIT);
+    _gallery.draw(viewProjection);      
+    if (_dragging.startsWith("line"))
+      _line.draw(viewProjection);
     _graph.draw(viewProjection);
     
-    if (_dragging.startsWith("line")) {
-      _line.draw(viewProjection);
-    }
+    //drawPicking();
   }
   
   void reproject() {
@@ -106,6 +111,11 @@ class Scene {
       _line.toPt   = (target as Connector).worldPos;
       _line.fromPt = (target as Connector).worldPos;
       setDirty();
+    } else if (target is GalleryNode) {
+      var newNodeType = (target as GalleryNode).getTypeName();
+      var newNode  = _graph.addNode(newNodeType, x:_lastMouse.x, y:_lastMouse.y);
+      _dragging    = "node";
+      _dragObject  = newNode;
     }
     
     e.preventDefault();

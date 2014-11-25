@@ -16,17 +16,31 @@ class Graph {
     sdfText.loadUrl(fontSrc[0], fontSrc[1]);
   }
   
-  void addNode(String type, {x:0.0, y:0.0, Vector2 position}) {
+  BaseNode addNode(String type, {x:0.0, y:0.0}) {
+    BaseNode newNode;
     switch (type.toLowerCase()) {
       case "entity":
-        nodes.add(new EntityNode(this, x:x, y:y));
+        newNode = new EntityNode(this, x:x, y:y);
         break;
       case "addition":
-        nodes.add(new AdditionNode(this, x:x, y:y));
+        newNode = new AdditionNode(this, x:x, y:y);
+        break;
+      case "subtraction":
+        newNode = new SubtractionNode(this, x:x, y:y);
+        break;
+      case "multiplication":
+        newNode = new MultiplicationNode(this, x:x, y:y);
+        break;
+      case "division":
+        newNode = new DivisionNode(this, x:x, y:y);
         break;
       default:
     }
+
+    if (newNode != null)
+      nodes.add(newNode);
     
+    return newNode;
   }
   
   void draw(Matrix4 projection, [bool picking = false]) {
