@@ -15,14 +15,8 @@ abstract class BaseNode {
      
      // Update connector lines
      for (var con in connectors) {
-       for (var other in con.connections) {
-         if (con.isOut) {
-           var line = graph.connectionLines[other];
-           line.fromPt = con.worldPos;
-         } else {
-           var line = graph.connectionLines[con];
-           line.toPt = con.worldPos;
-         }
+       for (var connection in con.connections) {
+         connection.update();
        }
      }
   }

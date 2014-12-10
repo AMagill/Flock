@@ -5,7 +5,7 @@ class Graph {
                    '/packages/Flock/fonts/font.json'];
 
   List<BaseNode> nodes = [];
-  Map<Connector, ConnectorLine> connectionLines = {};
+  Map<Connector, Connection> connections = {};
   
   final webgl.RenderingContext gl;
   final sdfText;
@@ -34,6 +34,12 @@ class Graph {
       case "division":
         newNode = new DivisionNode(this, x:x, y:y);
         break;
+      case "birdinput":
+        newNode = new BirdInput(this, x:x, y:y);
+        break;
+      case "birdoutput":
+        newNode = new BirdOutput(this, x:x, y:y);
+        break;
       default:
     }
 
@@ -49,7 +55,7 @@ class Graph {
     }
     
     if (!picking) {
-      for (var line in connectionLines.values) {
+      for (var line in connections.values) {
         line.draw(projection, picking);
       }
     }
@@ -58,20 +64,22 @@ class Graph {
   void connect(Connector outCon, Connector inCon) {
     disconnect(inCon);
     
-    var newLine = new ConnectorLine(gl)
-      ..fromPt = outCon.worldPos
-      ..toPt   = inCon.worldPos;
-    connectionLines[inCon] = newLine;
-    outCon.connections.add(inCon);
-    inCon.connections.add(outCon);
+    var newConnection = new Connection(gl, outCon, inCon);
+    connections[inCon] = newConnection;
+    outCon.connections.add(newConnection);
+    inCon.connections.add(newConnection);
   }
   
   void disconnect(Connector inCon) {
     // There should never be more than one
-    for (var other in inCon.connections) {
-      connectionLines.remove(inCon);
-      other.connections.remove(inCon);
+    for (var connection in inCon.connections) {
+      connection.conFrom.connections.remove(connection);
     }
+    connections.remove(inCon);
     inCon.connections.clear();
+  }
+  
+  void sort() {
+    
   }
 }

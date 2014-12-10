@@ -1,6 +1,6 @@
 part of Flock;
 
-class ConnectorLine extends Bezier {
+class ConnectionLine extends Bezier {
   static final _tan = new Vector2(0.5, 0.0);
   
   Vector2 get fromPt => _points[0];
@@ -15,7 +15,7 @@ class ConnectorLine extends Bezier {
     _updateControlPts();
   }
 
-  ConnectorLine(webgl.RenderingContext gl, {Vector2 fromPt, Vector2 toPt}) : super(gl) {
+  ConnectionLine(webgl.RenderingContext gl, {Vector2 fromPt, Vector2 toPt}) : super(gl) {
     _points = new Vector2List(4);
     
     if (fromPt != null)

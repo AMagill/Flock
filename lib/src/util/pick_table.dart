@@ -15,7 +15,7 @@ class PickTable {
   PickTable._internal();
   
   Vector3 add(Object obj) {
-    _seed = _lfsr(_seed);
+    _seed = _lfsr24(_seed);
     table[_seed] = obj;
     return new Vector3(((_seed>>16)&0xFF)/255.0, 
                        ((_seed>> 8)&0xFF)/255.0,
@@ -27,7 +27,7 @@ class PickTable {
     return table[seedVal];
   }
   
-  int _lfsr(int n) {
+  int _lfsr24(int n) {
     if ((n & 1) != 0)
       n = (n >> 1) ^ 0x8566AB;  // Maximum-length 24-bit LFSR
     else

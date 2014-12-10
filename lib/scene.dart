@@ -11,7 +11,7 @@ class Scene {
   Vector3 viewCenter = new Vector3(0.0, 0.0, 0.0);
   
   Graph _graph;
-  ConnectorLine _line;
+  ConnectionLine _line;
   NodeGallery _gallery;
   
   String _dragging = "";
@@ -29,9 +29,9 @@ class Scene {
       ..then((_) => setDirty());
 
     _graph = new Graph(gl);
-    _line = new ConnectorLine(gl);
+    _line = new ConnectionLine(gl);
     
-    _gallery = new NodeGallery(_graph, "+-*/", 1, x:-0.75);
+    _gallery = new NodeGallery(_graph, "addition,subtraction,multiplication,division,birdinput,birdoutput", 1, x:-0.75);
     
     reproject();
     
@@ -58,9 +58,9 @@ class Scene {
     gl.clearColor(0.8, 0.8, 0.8, 1.0);
     gl.clear(webgl.COLOR_BUFFER_BIT);
     _gallery.draw(viewProjection);      
+    _graph.draw(viewProjection);
     if (_dragging.startsWith("line"))
       _line.draw(viewProjection);
-    _graph.draw(viewProjection);
     
     //drawPicking();
   }
@@ -112,7 +112,7 @@ class Scene {
       _line.fromPt = (target as Connector).worldPos;
       setDirty();
     } else if (target is GalleryNode) {
-      var newNodeType = (target as GalleryNode).getTypeName();
+      var newNodeType = (target as GalleryNode).type;
       var newNode  = _graph.addNode(newNodeType, x:_lastMouse.x, y:_lastMouse.y);
       _dragging    = "node";
       _dragObject  = newNode;

@@ -10,7 +10,7 @@ class Connector {
   final BaseNode node;
   final bool     isOut;
   
-  Set<Connector> connections = new Set<Connector>();
+  Set<Connection> connections = new Set<Connection>();
   
   RoundedRect _rect;
   

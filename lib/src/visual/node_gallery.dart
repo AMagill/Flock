@@ -1,7 +1,8 @@
 part of Flock;
 
 class NodeGallery {
-  static const nodeSize = 0.15;
+  static const nodeWidth  = 0.4;
+  static const nodeHeight = 0.1;
   static const marginSize = 0.03;
   
   Graph graph;
@@ -10,10 +11,12 @@ class NodeGallery {
   List<GalleryNode> _nodes = [];
   
   NodeGallery(this.graph, String nodes, int columns, {double x:0.0, double y:0.0}) {
-    columns    = columns.clamp(1, nodes.length);
-    var rows   = nodes.length ~/ columns; 
-    var width  = marginSize + (nodeSize + marginSize) * columns;
-    var height = marginSize + (nodeSize + marginSize) * rows;
+    var nodeTypes = nodes.split(',');
+
+    columns    = columns.clamp(1, nodeTypes.length);
+    var rows   = nodeTypes.length ~/ columns; 
+    var width  = marginSize + (nodeWidth + marginSize) * columns;
+    var height = marginSize + (nodeHeight + marginSize) * rows;
     
     _rects = new RoundedRect(graph.gl)
       ..addRect(x, y, width, height, 
@@ -21,12 +24,12 @@ class NodeGallery {
           inColor  : new Vector4(1.0, 1.0, 1.0, 1.0));
     _text = new TextLayout(graph.gl, graph.sdfText);
     
-    final topLeftX = x + (nodeSize-width )/2 + marginSize;
-    final topLeftY = y + (height-nodeSize)/2 - marginSize; 
-    for (var i = 0; i < nodes.length; i++) {
-      var nx = topLeftX + (nodeSize+marginSize) * (i%columns);
-      var ny = topLeftY - (nodeSize+marginSize) * (i~/columns);
-      _nodes.add(new GalleryNode(this, nodes[i], nx, ny, nodeSize, nodeSize));
+    final topLeftX = x + (nodeWidth-width )/2 + marginSize;
+    final topLeftY = y + (height-nodeHeight)/2 - marginSize; 
+    for (var i = 0; i < nodeTypes.length; i++) {
+      var nx = topLeftX + (nodeWidth+marginSize) * (i%columns);
+      var ny = topLeftY - (nodeHeight+marginSize) * (i~/columns);
+      _nodes.add(new GalleryNode(this, nodeTypes[i], nx, ny, nodeWidth, nodeHeight));
     }
   }
   
@@ -43,20 +46,6 @@ class GalleryNode {
   GalleryNode(NodeGallery gallery, this.type, double x, double y, double w, double h) {
     var pickColor = new PickTable().add(this);
     gallery._rects.addRect(x, y, w, h, radius: 0.025, pickColor: pickColor);
-    gallery._text.addString(type, scale:1.0, x:x-0.015, y:y+0.060);
-  }
-  
-  String getTypeName() {
-    switch (type) {
-      case '+':
-        return "Addition";
-      case '-':
-        return "Subtraction";
-      case '*':
-        return "Multiplication";
-      case '/':
-        return "Division";
-    }
-    return null;
+    gallery._text.addString(type, scale:0.5, x:x-0.015, y:y+0.025);
   }
 }
