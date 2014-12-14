@@ -10,8 +10,7 @@ class NodeGallery {
   TextLayout  _text;
   List<GalleryNode> _nodes = [];
   
-  NodeGallery(this.graph, String nodes, int columns, {double x:0.0, double y:0.0}) {
-    var nodeTypes = nodes.split(',');
+  NodeGallery(this.graph, List<String> nodeTypes, int columns, {double x:0.0, double y:0.0}) {
 
     columns    = columns.clamp(1, nodeTypes.length);
     var rows   = nodeTypes.length ~/ columns; 

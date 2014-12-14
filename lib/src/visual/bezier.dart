@@ -9,6 +9,7 @@ class Bezier {
   int _divisions, _nLines;
   double _thick;
   Matrix4 _modelProj = new Matrix4.identity();
+  Vector4 color;
   
   get points => _points;
   set points(Vector2List newPts) {
@@ -51,13 +52,17 @@ void main() {
 precision mediump int;
 precision mediump float;
 
+uniform vec4 uColor;
+
 void main() {
-  gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+  gl_FragColor = uColor;
 }
 """;
       
       _shader = new Shader(_gl, vertSource, fragSource, {'aPosition': 0});
     }
+    
+    color = new Vector4(0.0, 0.0, 0.0, 1.0);
     
     _vboLine = _gl.createBuffer();
     _generateBuffer();
@@ -74,6 +79,8 @@ void main() {
     
     var mvp = projection * _modelProj;
     _gl.uniformMatrix4fv(_shader['uProj'], false, mvp.storage);
+    
+    _gl.uniform4fv(_shader['uColor'], color.storage);
     
     _gl.drawArrays(webgl.TRIANGLES, 0, _nLines * 6);
   }

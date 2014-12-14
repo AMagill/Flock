@@ -22,7 +22,6 @@ part 'src/visual/graph.dart';
 part 'src/visual/connector.dart';
 part 'src/visual/flock_sim.dart';
 part 'src/visual/nodes/base_node.dart';
-part 'src/visual/nodes/entity_node.dart';
 part 'src/visual/nodes/addition_node.dart';
 part 'src/visual/nodes/subtraction_node.dart';
 part 'src/visual/nodes/multiplication_node.dart';

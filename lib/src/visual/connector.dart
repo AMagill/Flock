@@ -22,4 +22,8 @@ class Connector {
     var pickColor = new PickTable().add(this);
     node._rect.addRect(x, y, size, size, radius:size/2, inColor:inColor, pickColor:pickColor);
   }
+  
+  String toString() {
+    return "${node.toString()}[${name}]";
+  }
 }

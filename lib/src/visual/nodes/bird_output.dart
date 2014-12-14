@@ -1,6 +1,9 @@
 part of Flock;
 
 class BirdOutput extends BaseNode {
+  static var objectCount = 0;
+  final uniqueNum = objectCount++;
+
   static const size = 0.2;
   
   TextLayout text;
@@ -13,12 +16,16 @@ class BirdOutput extends BaseNode {
     connectors.add(new Connector(this, 'inC', false, -size/2, -size/2));
 
     text = new TextLayout(graph.gl, graph.sdfText);
-    text.addString('Out', scale:1.2, x:-0.017, y:0.069);
+    text.addString('Out', scale:0.8, x:-0.017, y:0.069);
   }
   
   void draw(Matrix4 projection, [bool picking = false]) {
     super.draw(projection, picking);
     if (!picking)
       text.draw(projection * super.modelProj);
+  }
+
+  String toString() {
+    return "BirdOutput${uniqueNum}";
   }
 }

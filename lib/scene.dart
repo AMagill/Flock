@@ -29,9 +29,12 @@ class Scene {
       ..then((_) => setDirty());
 
     _graph = new Graph(gl);
+    _graph.outputNode = _graph.addNode("birdoutput", x:0.8, y:0.0);
     _line = new ConnectionLine(gl);
     
-    _gallery = new NodeGallery(_graph, "addition,subtraction,multiplication,division,birdinput,birdoutput", 1, x:-0.75);
+    _gallery = new NodeGallery(_graph, 
+        ["addition","subtraction","multiplication","division","birdinput"], 
+        1, x:-0.75);
     
     reproject();
     

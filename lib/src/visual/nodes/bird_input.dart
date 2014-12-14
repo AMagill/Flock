@@ -1,6 +1,9 @@
 part of Flock;
 
 class BirdInput extends BaseNode {
+  static var objectCount = 0;
+  final uniqueNum = objectCount++;
+
   static const size = 0.2;
   
   TextLayout text;
@@ -20,5 +23,9 @@ class BirdInput extends BaseNode {
     super.draw(projection, picking);
     if (!picking)
       text.draw(projection * super.modelProj);
+  }
+
+  String toString() {
+    return "BirdInput${uniqueNum}";
   }
 }
