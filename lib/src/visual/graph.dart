@@ -90,6 +90,7 @@ class Graph {
       e.offender.isCycleOffender = true;
     }
     
+    sorted = sorted.reversed.toList(growable:false);
   }
 }
 
