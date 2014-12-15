@@ -129,37 +129,54 @@ class Scene {
     var worldCoord = unproject(e.layer.x, e.layer.y);
     var delta      = worldCoord - _lastMouse;
     _lastMouse     = worldCoord;
+    bool badLine   = false;
+    bool dirty     = false;
     
     switch (_dragging) {
       case "canvas":
         viewCenter -= delta.xyz;
         _lastMouse -= delta;
         reproject();
-        setDirty();
+        dirty = true;
         break;
       case "node":
         (_dragObject as BaseNode).pos += delta.xy;
-        setDirty();
+        dirty = true;
         break;
       case "lineStart":
         if (target is Connector && target.isOut &&
             target.node != (_dragObject as Connector).node) {
+          // Snap to
           _line.fromPt = (target as Connector).worldPos;
+          badLine = !_graph.sortNodes(target.node, 
+            (_dragObject as Connector).node);
         } else {
           _line.fromPt = worldCoord.xy;          
         }
-        setDirty();
+        dirty = true;
         break;
       case "lineEnd":
         if (target is Connector && !target.isOut &&
             target.node != (_dragObject as Connector).node) {
+          // Snap to
           _line.toPt = (target as Connector).worldPos;
+          badLine = !_graph.sortNodes((_dragObject as Connector).node,
+              target.node);
         } else {
           _line.toPt = worldCoord.xy;
         }
-        setDirty();
+        dirty = true;
         break;
     }
+    
+    if (badLine) {
+      _line.color = new Vector4(1.0, 0.0, 0.0, 1.0);
+    } else {
+      _line.color = new Vector4(0.0, 0.0, 0.0, 1.0);
+    }
+    
+    if (dirty) 
+      setDirty();
   }
   
   void onMouseUp(MouseEvent e) {
@@ -167,13 +184,15 @@ class Scene {
     switch (_dragging) {
       case "lineStart":
         if (target is Connector && target.isOut &&
-            target.node != (_dragObject as Connector).node) {
-          _graph.connect(target, _dragObject);
+            target.node != (_dragObject as Connector).node &&
+            _graph.sortNodes(target.node, (_dragObject as Connector).node)) {
+            _graph.connect(target, _dragObject);
         }        
         break;
       case "lineEnd":
         if (target is Connector && !target.isOut &&
-            target.node != (_dragObject as Connector).node) {
+            target.node != (_dragObject as Connector).node &&
+            _graph.sortNodes((_dragObject as Connector).node, target.node)) {
           _graph.connect(_dragObject, target);
         }
         break;

@@ -46,7 +46,7 @@ class Graph {
     outCon.connections.add(newConnection);
     inCon.connections.add(newConnection);
     
-    sortConnections();
+    sortNodes();
   }
   
   void disconnect(Connector inCon) {
@@ -56,45 +56,38 @@ class Graph {
     connections.remove(inCon);
     inCon.connections.clear();
     
-    sortConnections();
+    sortNodes();
   }
   
-  void sortConnections() {
+  bool sortNodes([BaseNode testFrom, BaseNode testTo]) {
     // To solve the graph, we need to compute the value of each connection in
     // order so that each node's outputs are computed after all its inputs.
     // This is what topological sorting is for.
-    List<Connection> sorted  = new List<Connection>();
-    Set<Connection> unmarked = connections.values.toSet();
-    Set<Connection> tempMark = new Set<Connection>();
+    var sorted   = [];
+    var unmarked = nodes.toSet();
+    var tempMark = new Set<BaseNode>();
     
-    void visit(Connection n) {
+    bool visit(BaseNode n) {
       if (tempMark.contains(n))
-        throw new GraphCycleException(n);
+        return false;
       if (unmarked.contains(n)) {
         tempMark.add(n);
-        for (var m in n.conTo.node.outputConnections)
-          visit(m);
+        if (n == testFrom)
+          if (!visit(testTo)) return false;
+        for (var m in n.outputConnections) {
+          if (!visit(m.conTo.node)) return false;          
+        }
         unmarked.remove(n);
         tempMark.remove(n);
         sorted.add(n);
       }
+      return true;
     }
     
-    for (var con in connections.values)
-      con.isCycleOffender = false;
-    
-    try {
-      while (unmarked.isNotEmpty)
-        visit(unmarked.first);
-    } on GraphCycleException catch (e) {
-      e.offender.isCycleOffender = true;
-    }
+    while (unmarked.isNotEmpty)
+      if (!visit(unmarked.first)) return false;
     
     sorted = sorted.reversed.toList(growable:false);
+    return true;
   }
-}
-
-class GraphCycleException implements Exception {
-  final Connection offender;
-  GraphCycleException(this.offender);
 }
