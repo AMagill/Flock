@@ -39,7 +39,7 @@ class Graph {
   }
   
   void connect(Connector outCon, Connector inCon) {
-    disconnect(inCon);    // Inputs should never have more than one connection.
+    disconnect(inCon, skipSort:true);    // Inputs should never have more than one connection.
     
     var newConnection = new Connection(gl, outCon, inCon);
     connections[inCon] = newConnection;
@@ -49,21 +49,22 @@ class Graph {
     sortNodes();
   }
   
-  void disconnect(Connector inCon) {
+  void disconnect(Connector inCon, {bool skipSort:false}) {
     for (var connection in inCon.connections) {
       connection.conFrom.connections.remove(connection);
     }
     connections.remove(inCon);
     inCon.connections.clear();
     
-    sortNodes();
+    if (!skipSort)
+      sortNodes();
   }
   
   bool sortNodes([BaseNode testFrom, BaseNode testTo]) {
     // To solve the graph, we need to compute the value of each connection in
     // order so that each node's outputs are computed after all its inputs.
     // This is what topological sorting is for.
-    var sorted   = [];
+    var sortedNodes = new List<BaseNode>();
     var unmarked = nodes.toSet();
     var tempMark = new Set<BaseNode>();
     
@@ -79,15 +80,25 @@ class Graph {
         }
         unmarked.remove(n);
         tempMark.remove(n);
-        sorted.add(n);
+        sortedNodes.add(n);
       }
       return true;
     }
     
+    // Speculative testing doesn't care about computing the graph
+    if (testFrom != null) return true;
+    
     while (unmarked.isNotEmpty)
       if (!visit(unmarked.first)) return false;
     
-    sorted = sorted.reversed.toList(growable:false);
+    sortedNodes = sortedNodes.reversed.toList(growable:false);
+    
+    
+    // Try computing the graph
+    var computeList = sortedNodes.map((n)=>n.getCompute()).toList(growable:false);
+    var state = {};
+    computeList.forEach((compute)=>compute(state));
+        
     return true;
   }
 }

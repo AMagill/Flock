@@ -3,7 +3,7 @@ part of Flock;
 abstract class BaseNode {
   Graph graph;
   RoundedRect _rect;
-  List<Connector> connectors = new List<Connector>();
+  Map<String, Connector> connectors = new Map<String, Connector>();
   Matrix4 modelProj = new Matrix4.identity();
   double width, height;
   Vector2 _pos;
@@ -14,7 +14,7 @@ abstract class BaseNode {
      modelProj.setTranslationRaw(val.x, val.y, 0.0);
      
      // Update connector lines
-     for (var con in connectors) {
+     for (var con in connectors.values) {
        for (var connection in con.connections) {
          connection.update();
        }
@@ -23,13 +23,13 @@ abstract class BaseNode {
   
   Set<Connection> get inputConnections {
     var result = new Set<Connection>();
-    connectors.where((c)=>!c.isOut).forEach((c)=>result.addAll(c.connections));
+    connectors.values.where((c)=>!c.isOut).forEach((c)=>result.addAll(c.connections));
     return result;
   }
 
   Set<Connection> get outputConnections {
     var result = new Set<Connection>();
-    connectors.where((c)=>c.isOut).forEach((c)=>result.addAll(c.connections));
+    connectors.values.where((c)=>c.isOut).forEach((c)=>result.addAll(c.connections));
     return result;
   }
 
@@ -61,5 +61,10 @@ abstract class BaseNode {
     
     _rect.draw(mvp, picking);
 
+  }
+  
+  getCompute() {
+    void doCompute(Map state) {}  // No-op
+    return doCompute;
   }
 }
