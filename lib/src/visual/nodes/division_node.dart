@@ -16,7 +16,7 @@ class DivisionNode extends BaseNode {
     connectors['out'] = new Connector(this, 'out', true,   size/2,  0.0   );
 
     text = new TextLayout(graph.gl, graph.sdfText);
-    text.addString('/', scale:1.5, x:-0.017, y:0.089);
+    text.addString('÷', scale:0.20, x:0.0, y:0.10);
   }
   
   void draw(Matrix4 projection, [bool picking = false]) {

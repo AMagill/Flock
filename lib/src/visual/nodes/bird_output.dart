@@ -16,7 +16,7 @@ class BirdOutput extends BaseNode {
     connectors['inC'] = new Connector(this, 'inC', false, -size/2, -size/2);
 
     text = new TextLayout(graph.gl, graph.sdfText);
-    text.addString('Out', scale:0.8, x:-0.017, y:0.069);
+    text.addString('Out', scale:0.10, x:0.0, y:0.05);
   }
   
   void draw(Matrix4 projection, [bool picking = false]) {

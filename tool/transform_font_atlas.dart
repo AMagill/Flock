@@ -15,7 +15,7 @@ void convert(String inFileName, String outFileName) {
   var keyPattern = new RegExp(r"^(\w+)");
   var valPattern = new RegExp(r"([^ ]+)=([^ ]*)");
   
-  var scaleW, scaleH;
+  var scaleW, scaleH, size;
   var chars = {};
   
   var inLines = new File(inFileName).readAsLinesSync();
@@ -28,19 +28,24 @@ void convert(String inFileName, String outFileName) {
     }
     
     switch (key) {
+      case 'info':
+        size = int.parse(vals['size']);
+        break;
       case 'common':
         scaleW = int.parse(vals['scaleW']);
         scaleH = int.parse(vals['scaleH']);
         break;
       case 'char':
         chars[vals['id']] = {
-          'x':        int.parse(vals['x'])        / scaleW,
-          'y':        int.parse(vals['y'])        / scaleH,
-          'width':    int.parse(vals['width'])    / scaleW,
-          'height':   int.parse(vals['height'])   / scaleH,
-          'xoffset':  int.parse(vals['xoffset'])  / scaleW,
-          'yoffset':  int.parse(vals['yoffset'])  / scaleH,
-          'xadvance': int.parse(vals['xadvance']) / scaleW,
+          'uvx':      int.parse(vals['x'])        / scaleW,
+          'uvy':      int.parse(vals['y'])        / scaleH,
+          'uvw':      int.parse(vals['width'])    / scaleW,
+          'uvh':      int.parse(vals['height'])   / scaleH,
+          'width':    int.parse(vals['width'])    / size,
+          'height':   int.parse(vals['height'])   / size,
+          'xoffset':  int.parse(vals['xoffset'])  / size,
+          'yoffset':  int.parse(vals['yoffset'])  / size,
+          'xadvance': int.parse(vals['xadvance']) / size,
           'kernings': {},
         };
         break;

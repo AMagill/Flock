@@ -45,6 +45,6 @@ class GalleryNode {
   GalleryNode(NodeGallery gallery, this.type, double x, double y, double w, double h) {
     var pickColor = new PickTable().add(this);
     gallery._rects.addRect(x, y, w, h, radius: 0.025, pickColor: pickColor);
-    gallery._text.addString(type, scale:0.5, x:x-0.015, y:y+0.025);
+    gallery._text.addString(type, scale:0.06, x:x, y:y+0.025);
   }
 }

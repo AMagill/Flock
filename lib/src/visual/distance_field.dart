@@ -53,9 +53,9 @@ varying vec3  vColor;
 varying float vThreshold;
 
 void main() {
-  float aa = 64.0 * fwidth(vPos.x);
+  float aa = 16.0 * fwidth(vPos.x);
   float alpha = smoothstep(vThreshold-aa, vThreshold+aa, texture2D(uTexture, vTex).r);
-  alpha = step(vThreshold, texture2D(uTexture, vTex).r);
+  //alpha = step(vThreshold, texture2D(uTexture, vTex).r);
   gl_FragColor = vec4(vColor, alpha);
 }
 """;

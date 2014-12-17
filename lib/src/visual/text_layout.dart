@@ -123,17 +123,20 @@ class TextLayout {
     assert(_sdf.atlas.containsKey(glyph));
     
     var glyphInfo = _sdf.atlas[glyph];
-    final x  = glyphInfo['x'];
-    final y  = glyphInfo['y'];
-    final w  = glyphInfo['width'];
-    final h  = glyphInfo['height'];
-    final xo = glyphInfo['xoffset'];
-    final yo = -glyphInfo['yoffset'];
+    final uvx = glyphInfo['uvx'];
+    final uvy = glyphInfo['uvy'];
+    final uvw = glyphInfo['uvw'];
+    final uvh = glyphInfo['uvh'];
+    final w   = glyphInfo['width'];
+    final h   = glyphInfo['height'];
+    final xo  = glyphInfo['xoffset'];
+    final yo  = glyphInfo['yoffset'] * -1;
 
     _layout.add({
       'pos':        position + new Vector2(xo, yo) * scale,
       'size':       new Vector2(w, h),
-      'uv':         new Vector2(x, y),
+      'uvpos':      new Vector2(uvx, uvy),
+      'uvsize':     new Vector2(uvw, uvh),
       'color':      color,
       'scale':      scale,
       'threshold':  threshold,
@@ -157,7 +160,8 @@ class TextLayout {
     for (var item in _layout) {
       var pos       = item['pos'];
       var size      = item['size'];
-      var uv        = item['uv'];
+      var uvpos     = item['uvpos'];
+      var uvsize    = item['uvsize'];
       var color     = item['color'];
       var scale     = item['scale'];
       var threshold = item['threshold'];
@@ -169,12 +173,12 @@ class TextLayout {
       vtPos[vi+4] = pos + new Vector2(size.x, 0.0    ) * scale;
       vtPos[vi+5] = pos + new Vector2(0.0,    0.0    ) * scale;
 
-      vtTex[vi+0] = uv + new Vector2(0.0,    size.y);
-      vtTex[vi+1] = uv + new Vector2(size.x, size.y);
-      vtTex[vi+2] = uv + new Vector2(size.x, 0.0    );
-      vtTex[vi+3] = uv + new Vector2(0.0,    size.y);
-      vtTex[vi+4] = uv + new Vector2(size.x, 0.0    );
-      vtTex[vi+5] = uv + new Vector2(0.0,    0.0    );
+      vtTex[vi+0] = uvpos + new Vector2(0.0,      uvsize.y);
+      vtTex[vi+1] = uvpos + new Vector2(uvsize.x, uvsize.y);
+      vtTex[vi+2] = uvpos + new Vector2(uvsize.x, 0.0    );
+      vtTex[vi+3] = uvpos + new Vector2(0.0,      uvsize.y);
+      vtTex[vi+4] = uvpos + new Vector2(uvsize.x, 0.0    );
+      vtTex[vi+5] = uvpos + new Vector2(0.0,      0.0    );
       
       for (var i = 0; i < 6; i++) {
         vtCol[vi+i] = new Vector4(color.r, color.g, color.b, threshold);

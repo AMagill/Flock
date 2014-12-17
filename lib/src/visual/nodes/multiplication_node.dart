@@ -16,7 +16,7 @@ class MultiplicationNode extends BaseNode {
     connectors['out'] = new Connector(this, 'out', true,   size/2,  0.0   );
 
     text = new TextLayout(graph.gl, graph.sdfText);
-    text.addString('X', scale:1.2, x:-0.017, y:0.069);
+    text.addString('*', scale:0.25, x:0.0, y:0.08);
   }
   
   void draw(Matrix4 projection, [bool picking = false]) {
