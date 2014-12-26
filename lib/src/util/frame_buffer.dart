@@ -3,7 +3,7 @@ import 'dart:web_gl' as webgl;
 
 class FrameBuffer {
   final webgl.RenderingContext _gl;
-  final int           width, height;
+  int           width, height;
   final webgl.Framebuffer      fbo;
   final webgl.Texture       imageTex;
   final webgl.Renderbuffer  depthBuf;
@@ -33,5 +33,17 @@ class FrameBuffer {
     _gl.bindTexture(webgl.TEXTURE_2D, null);
     _gl.bindRenderbuffer(webgl.RENDERBUFFER, null);
     _gl.bindFramebuffer(webgl.FRAMEBUFFER, null);
+  }
+  
+  void resize(int width, int height) {
+    this.width  = width;
+    this.height = height;
+    _gl.bindTexture(webgl.TEXTURE_2D, imageTex);
+    _gl.texImage2DTyped(webgl.TEXTURE_2D, 0, webgl.RGBA, width, height, 0, 
+        webgl.RGBA, webgl.UNSIGNED_BYTE, null);
+    _gl.bindRenderbuffer(webgl.RENDERBUFFER, depthBuf);
+    _gl.renderbufferStorage(webgl.RENDERBUFFER, webgl.DEPTH_COMPONENT16, width, height);    
+    _gl.bindTexture(webgl.TEXTURE_2D, null);
+    _gl.bindRenderbuffer(webgl.RENDERBUFFER, null);
   }
 }

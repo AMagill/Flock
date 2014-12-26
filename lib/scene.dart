@@ -38,6 +38,7 @@ class Scene {
     
     reproject();
     
+    gl.viewport(0, 0, width, height);
     gl.enable(webgl.BLEND);
     gl.blendFunc(webgl.SRC_ALPHA, webgl.ONE_MINUS_SRC_ALPHA);
   }
@@ -68,9 +69,20 @@ class Scene {
     //drawPicking();
   }
   
+  void resize(int width, int height) {
+    this.width  = width;
+    this.height = height;
+    gl.viewport(0, 0, width, height);
+    pickBuf.resize(width, height);
+    reproject();
+  }
+  
   void reproject() {
     viewProjection = new Matrix4.identity();
-    viewProjection.scale(math.pow(1.2, zoom));
+    var zs = math.pow(1.2, zoom);
+    var arx = math.min(height / width, 1.0);
+    var ary = math.min(width / height, 1.0);
+    viewProjection.scale(zs * arx, zs * ary);
     viewProjection.translate(-viewCenter);
     
     invViewProj = viewProjection.clone()..invert();
@@ -93,7 +105,7 @@ class Scene {
   }
   
   Vector4 unproject(int x, int y) {
-    return invViewProj * new Vector4(x*2.0/width-1.0, -(y*2.0/width-1.0), 0.0, 1.0);
+    return invViewProj * new Vector4(x*2.0/width-1.0, -(y*2.0/height-1.0), 0.0, 1.0);
   }
 
   void onMouseDown(MouseEvent e) {
@@ -210,7 +222,7 @@ class Scene {
   void onMouseWheel(WheelEvent e) {
     zoom += e.wheelDeltaY / 120.0;
     zoom = math.max(zoom, -10.0);
-    zoom = math.min(zoom,  10.0);
+    zoom = math.min(zoom,  20.0);
     reproject();
     setDirty();
   }
