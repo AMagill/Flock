@@ -19,3 +19,7 @@ footer {
   left:5px;
   pointer-events:none;
 }
+
+a {
+  pointer-events:auto;
+}

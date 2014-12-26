@@ -11,6 +11,7 @@ import 'dart:math' as math;
 import 'src/util/shader.dart';
 import 'src/util/pick_table.dart';
 import 'src/util/frame_buffer.dart';
+import 'src/util/camera.dart';
 
 part 'src/visual/rounded_rect.dart';
 part 'src/visual/bezier.dart';
