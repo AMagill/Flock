@@ -63,8 +63,6 @@ varying vec3    vPickColor;
 uniform bool    uPicking;
 
 void main() {
-  const float EPSILON = 0.000001;
-
   if (uPicking)
   {
     gl_FragColor = vec4(vPickColor, 1.0);
