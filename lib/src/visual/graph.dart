@@ -85,11 +85,11 @@ class Graph {
       return true;
     }
     
-    // Speculative testing doesn't care about computing the graph
-    if (testFrom != null) return true;
-    
     while (unmarked.isNotEmpty)
       if (!visit(unmarked.first)) return false;
+    
+    // Speculative testing doesn't care about computing the graph
+    if (testFrom != null) return true;
     
     sortedNodes = sortedNodes.reversed.toList(growable:false);
     
