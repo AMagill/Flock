@@ -10,6 +10,7 @@ class Scene {
   Graph _graph;
   ConnectionLine _line;
   NodeGallery _gallery;
+  FlockSim _sim;
   
   String _dragging = "";
   Object _dragObject;
@@ -28,12 +29,15 @@ class Scene {
       ..then((_) => setDirty());
 
     _graph = new Graph(gl);
-    _graph.outputNode = _graph.addNode("birdoutput", x:0.8, y:0.0);
+    _graph.outputNode = _graph.addNode("birdoutput", x:0.8, y:-0.2);
+    _graph.addNode("birdinput", x:-0.8, y:-0.2);
     _line = new ConnectionLine(gl);
     
     _gallery = new NodeGallery(_graph, 
-        ["addition","subtraction","multiplication","division","birdinput"], 
-        1, x:-0.75);
+        ["addition","subtraction","multiplication","division"], 
+        4, y:-1.0);
+    
+    _sim = new FlockSim(_graph, x:0.0, y:1.0, w:1.5, h:1.5);
     
     gl.viewport(0, 0, width, height);
     gl.enable(webgl.BLEND);
@@ -58,6 +62,7 @@ class Scene {
     gl.bindFramebuffer(webgl.FRAMEBUFFER, null);
     gl.clearColor(0.8, 0.8, 0.8, 1.0);
     gl.clear(webgl.COLOR_BUFFER_BIT);
+    _sim.draw(camera.projection);
     _gallery.draw(camera.projection);      
     _graph.draw(camera.projection);
     if (_dragging.startsWith("line"))
