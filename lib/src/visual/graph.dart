@@ -7,13 +7,15 @@ class Graph {
   BaseNode outputNode;
   List<BaseNode> nodes = [];
   Map<Connector, Connection> connections = {};
+  Function compute;
   
   final webgl.RenderingContext gl;
   final sdfText;
   
   Graph(gl) 
     : this.gl = gl,
-      sdfText = new DistanceField(gl) {
+      sdfText = new DistanceField(gl),
+      compute = computeNop {
     sdfText.loadUrl(fontSrc[0], fontSrc[1]);
   }
   
@@ -60,6 +62,8 @@ class Graph {
       sortNodes();
   }
   
+  static void computeNop(Map state) {}
+  
   bool sortNodes([BaseNode testFrom, BaseNode testTo]) {
     // To solve the graph, we need to compute the value of each connection in
     // order so that each node's outputs are computed after all its inputs.
@@ -91,13 +95,11 @@ class Graph {
     // Speculative testing doesn't care about computing the graph
     if (testFrom != null) return true;
     
+    // Prepare a closure to compute the graph
     sortedNodes = sortedNodes.reversed.toList(growable:false);
-    
-    
-    // Try computing the graph
     var computeList = sortedNodes.map((n)=>n.getCompute()).toList(growable:false);
-    var state = {};
-    computeList.forEach((compute)=>compute(state));
+    void compute(Map state) => computeList.forEach((compute)=>compute(state));
+    this.compute = compute;
         
     return true;
   }
