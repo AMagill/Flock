@@ -4,7 +4,6 @@ class Scene {
   int width, height;
   webgl.RenderingContext gl;
   FrameBuffer pickBuf;
-  StreamController _onDirtyController = new StreamController(); 
   Camera camera = new Camera();
   
   Graph _graph;
@@ -16,8 +15,6 @@ class Scene {
   Object _dragObject;
   Vector2 _lastMouse = new Vector2.zero();
   
-  Stream get onDirty => _onDirtyController.stream;
-  
   Scene(this.gl, this.width, this.height) {
     pickBuf = new FrameBuffer(gl, width, height);
     
@@ -25,8 +22,7 @@ class Scene {
 
     var sdfText = new DistanceField(gl);
     sdfText.loadUrl('/packages/Flock/fonts/font.png',
-                    '/packages/Flock/fonts/font.json')
-      ..then((_) => setDirty());
+                    '/packages/Flock/fonts/font.json');
 
     _graph = new Graph(gl);
     _graph.outputNode = _graph.addNode("birdoutput", x:0.8, y:-0.2);
@@ -79,11 +75,6 @@ class Scene {
     camera.aspect = width / height;
   }
   
-  void setDirty() {
-    if (_onDirtyController.hasListener && !_onDirtyController.isPaused)
-      _onDirtyController.add(null);
-  }
-  
   Object getPickObject(int x, int y) {
     var pixel = new Uint8List(4);
     pixel[1] = 42;
@@ -112,7 +103,6 @@ class Scene {
       _dragObject  = target;        
       _line.toPt   = (target as Connector).worldPos;
       _line.fromPt = (target as Connector).worldPos;
-      setDirty();
     } else if (target is GalleryNode) {
       var newNodeType = (target as GalleryNode).type;
       var newNode  = _graph.addNode(newNodeType, x:_lastMouse.x, y:_lastMouse.y);
@@ -129,17 +119,14 @@ class Scene {
     var delta      = worldCoord - _lastMouse;
     _lastMouse     = worldCoord;
     bool badLine   = false;
-    bool dirty     = false;
     
     switch (_dragging) {
       case "canvas":
         camera.center -= delta;
         _lastMouse -= delta;
-        dirty = true;
         break;
       case "node":
         (_dragObject as BaseNode).pos += delta.xy;
-        dirty = true;
         break;
       case "lineStart":
         if (target is Connector && target.isOut &&
@@ -151,7 +138,6 @@ class Scene {
         } else {
           _line.fromPt = worldCoord.xy;          
         }
-        dirty = true;
         break;
       case "lineEnd":
         if (target is Connector && !target.isOut &&
@@ -163,7 +149,6 @@ class Scene {
         } else {
           _line.toPt = worldCoord.xy;
         }
-        dirty = true;
         break;
     }
     
@@ -172,9 +157,6 @@ class Scene {
     } else {
       _line.color = new Vector4(0.0, 0.0, 0.0, 1.0);
     }
-    
-    if (dirty) 
-      setDirty();
   }
   
   void onMouseUp(MouseEvent e) {
@@ -197,17 +179,14 @@ class Scene {
     }
     
     _dragging = "";
-    setDirty();
   }
 
   void onMouseOut(MouseEvent e) {
     _dragging = "";
-    setDirty();
   }
   
   void onMouseWheel(WheelEvent e) {
     var worldCoord = camera.unproject(e.layer.x/width, e.layer.y/height);
     camera.zoomBy(e.wheelDeltaY / 200.0, center:worldCoord);
-    setDirty();
   }
 }

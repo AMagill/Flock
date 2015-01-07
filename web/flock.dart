@@ -20,7 +20,6 @@ void main() {
   canvas.height = canvas.parent.client.height;
   _scene  = new Scene(_gl, canvas.width, canvas.height);
   
-  _scene.onDirty.listen((e)      => scheduleRender());
   canvas.onMouseWheel.listen((e) => _scene.onMouseWheel(e));
   canvas.onMouseDown.listen((e)  => _scene.onMouseDown(e));    
   canvas.onMouseUp.listen((e)    => _scene.onMouseUp(e));    
@@ -31,14 +30,14 @@ void main() {
     canvas.width  = canvas.parent.client.width;
     canvas.height = canvas.parent.client.height;
     _scene.resize(canvas.width, canvas.height);
-    scheduleRender();    
   });
   
-  scheduleRender();    
+  gameLoop();    
 }
 
-void scheduleRender() {
-  window.animationFrame
-    ..then((time) => _scene.draw());
+void gameLoop([num delta = 0.0]) {
+  _scene.animate(delta);
+  _scene.draw();
+  window.animationFrame.then(gameLoop);
 }
 
