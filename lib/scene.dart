@@ -41,7 +41,7 @@ class Scene {
   }
   
   void animate(double time) {
-    
+    _sim.animate(time);
   }
   
   void draw() {

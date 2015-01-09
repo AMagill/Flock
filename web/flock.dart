@@ -11,7 +11,7 @@ Vector2 _center;
 
 void main() {
   var canvas = document.querySelector("#glCanvas");
-  _gl = canvas.getContext("webgl", {'preserveDrawingBuffer': true});
+  _gl = canvas.getContext("webgl", {'preserveDrawingBuffer': true, 'stencil': true});
 
   var extStdDeriv = _gl.getExtension('OES_standard_derivatives');
   //_gl.hint(webgl.OesStandardDerivatives.FRAGMENT_SHADER_DERIVATIVE_HINT_OES, webgl.FASTEST);
